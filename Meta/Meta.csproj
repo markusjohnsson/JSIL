@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,14 +36,6 @@
     <ApplicationIcon>jsil.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Attributes.cs" />
     <Compile Include="StaticAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -51,6 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="jsil.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JSIL.Corlib\JSIL.Corlib.csproj">
+      <Project>{C62BB426-3E67-4D0D-8815-7A5312FF864A}</Project>
+      <Name>JSIL.Corlib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

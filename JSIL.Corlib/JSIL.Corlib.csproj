@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C62BB426-3E67-4D0D-8815-7A5312FF864A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>System</RootNamespace>
+    <AssemblyName>JSIL.Corlib</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Array.cs" />
+    <Compile Include="Attribute.cs" />
+    <Compile Include="AttributeTargets.cs" />
+    <Compile Include="AttributeUsageAttribute.cs" />
+    <Compile Include="Boolean.cs" />
+    <Compile Include="Byte.cs" />
+    <Compile Include="Char.cs" />
+    <Compile Include="Collections\IEnumerable.cs" />
+    <Compile Include="Collections\IEnumerator.cs" />
+    <Compile Include="Delegate.cs" />
+    <Compile Include="Double.cs" />
+    <Compile Include="Enum.cs" />
+    <Compile Include="EventArgs.cs" />
+    <Compile Include="EventHandler.cs" />
+    <Compile Include="Exception.cs" />
+    <Compile Include="Flags.cs" />
+    <Compile Include="IDisposable.cs" />
+    <Compile Include="Int16.cs" />
+    <Compile Include="Int32.cs" />
+    <Compile Include="Int64.cs" />
+    <Compile Include="IntPtr.cs" />
+    <Compile Include="InvalidOperationException.cs" />
+    <Compile Include="MulticastDelegate.cs" />
+    <Compile Include="Object.cs" />
+    <Compile Include="ParamArrayAttribute.cs" />
+    <Compile Include="Reflection\DefaultMemberAttribute.cs" />
+    <Compile Include="Runtime.InteropServices\OutAttribute.cs" />
+    <Compile Include="Runtime.InteropServices\_Attribute.cs" />
+    <Compile Include="Runtime.Versioning\TargetFrameworkAttribute.cs" />
+    <Compile Include="RuntimeFieldHandle.cs" />
+    <Compile Include="RuntimeTypeHandle.cs" />
+    <Compile Include="SByte.cs" />
+    <Compile Include="Single.cs" />
+    <Compile Include="String.cs" />
+    <Compile Include="SystemException.cs" />
+    <Compile Include="Type.cs" />
+    <Compile Include="UInt16.cs" />
+    <Compile Include="UInt32.cs" />
+    <Compile Include="UInt64.cs" />
+    <Compile Include="UIntPtr.cs" />
+    <Compile Include="ValueType.cs" />
+    <Compile Include="Void.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
