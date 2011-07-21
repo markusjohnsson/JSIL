@@ -64,6 +64,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Meta\Attributes.cs">
+      <Link>Attributes.cs</Link>
+    </Compile>
+    <Compile Include="..\Meta\Proxies.cs">
+      <Link>Proxies.cs</Link>
+    </Compile>
     <Compile Include="AST\JSAstVisitor.cs" />
     <Compile Include="AST\JSOperators.cs" />
     <Compile Include="AST\JSNodeTypes.cs" />
@@ -90,14 +96,6 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Meta\Meta.csproj">
-      <Project>{37C67C73-1F58-49B8-A39E-768AC88C2447}</Project>
-      <Name>Meta</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Proxies\Proxies.csproj">
-      <Project>{12DBCC9A-50FE-43B1-BAD1-8029D4AD60C8}</Project>
-      <Name>Proxies</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Upstream\ILSpy\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
       <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
       <Name>ICSharpCode.Decompiler</Name>

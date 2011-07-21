@@ -1,7 +1,7 @@
 ﻿
 namespace System
 {
-    public class Delegate
+    public class Console
     {
     }
 }

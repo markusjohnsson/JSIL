@@ -244,10 +244,6 @@
       <Project>{DA03D241-B70C-44D7-A465-3CEB5A9416AE}</Project>
       <Name>JSIL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Meta\Meta.csproj">
-      <Project>{37C67C73-1F58-49B8-A39E-768AC88C2447}</Project>
-      <Name>Meta</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Upstream\ILSpy\ICSharpCode.Decompiler\ICSharpCode.Decompiler.csproj">
       <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
       <Name>ICSharpCode.Decompiler</Name>

@@ -62,7 +62,7 @@ namespace JSIL {
                 TypeInfoProvider = typeInfoProvider;
             } else {
                 TypeInfoProvider = new JSIL.TypeInfoProvider();
-                AddProxyAssembly(typeof(JSIL.Proxies.ObjectProxy).Assembly, false);
+                //AddProxyAssembly(typeof(JSIL.Proxies.ObjectProxy).Assembly, false);
             }
         }
 
