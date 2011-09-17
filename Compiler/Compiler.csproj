@@ -77,6 +77,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="jsil.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\JSIL\JSIL.csproj">
       <Project>{DA03D241-B70C-44D7-A465-3CEB5A9416AE}</Project>
       <Name>JSIL</Name>
@@ -85,12 +91,6 @@
       <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
       <Name>Mono.Cecil</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="jsil.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

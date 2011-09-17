@@ -9,16 +9,17 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>System</RootNamespace>
-    <AssemblyName>JSIL.Corlib</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <AssemblyName>mscorlib</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;JSIL_CORLIB</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -41,6 +42,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Meta\Attributes.cs">
+      <Link>_JSIL\Attributes.cs</Link>
+    </Compile>
+    <Compile Include="..\Meta\Proxies.cs">
+      <Link>_JSIL\Proxies.cs</Link>
+    </Compile>
+    <Compile Include="..\Meta\StaticAnalysis.cs">
+      <Link>_JSIL\StaticAnalysis.cs</Link>
+    </Compile>
+    <Compile Include="..\Meta\Verbatim.cs">
+      <Link>_JSIL\Verbatim.cs</Link>
+    </Compile>
     <Compile Include="Array.cs" />
     <Compile Include="Attribute.cs" />
     <Compile Include="AttributeTargets.cs" />
@@ -100,6 +113,9 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(OutDir)\*.* $(ProjectDir)\..\Tests\bin\</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
