@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;JSIL_CORLIB</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;JSIL_CORLIB JSIL INSIDE_CORLIB MOONLIGHT NET_2_1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -54,60 +54,405 @@
     <Compile Include="..\Meta\Verbatim.cs">
       <Link>_JSIL\Verbatim.cs</Link>
     </Compile>
-    <Compile Include="Array.cs" />
-    <Compile Include="Attribute.cs" />
-    <Compile Include="AttributeTargets.cs" />
-    <Compile Include="AttributeUsageAttribute.cs" />
-    <Compile Include="Boolean.cs" />
-    <Compile Include="Byte.cs" />
-    <Compile Include="Char.cs" />
-    <Compile Include="Collections.Generic\IEnumerable.cs" />
-    <Compile Include="Collections.Generic\IEnumerator.cs" />
-    <Compile Include="Collections\IEnumerable.cs" />
-    <Compile Include="Collections\IEnumerator.cs" />
-    <Compile Include="Console.cs" />
-    <Compile Include="Decimal.cs" />
-    <Compile Include="Delegate.cs" />
-    <Compile Include="Double.cs" />
-    <Compile Include="Enum.cs" />
-    <Compile Include="EventArgs.cs" />
-    <Compile Include="EventHandler.cs" />
-    <Compile Include="Exception.cs" />
-    <Compile Include="Flags.cs" />
-    <Compile Include="IDisposable.cs" />
-    <Compile Include="Int16.cs" />
-    <Compile Include="Int32.cs" />
-    <Compile Include="Int64.cs" />
-    <Compile Include="IntPtr.cs" />
-    <Compile Include="InvalidOperationException.cs" />
-    <Compile Include="Math.cs" />
-    <Compile Include="MulticastDelegate.cs" />
-    <Compile Include="Object.cs" />
-    <Compile Include="ParamArrayAttribute.cs" />
-    <Compile Include="Random.cs" />
-    <Compile Include="Reflection\DefaultMemberAttribute.cs" />
-    <Compile Include="Reflection\MemberFilter.cs" />
-    <Compile Include="Runtime.InteropServices\OutAttribute.cs" />
-    <Compile Include="Runtime.InteropServices\_Attribute.cs" />
-    <Compile Include="Runtime.Versioning\TargetFrameworkAttribute.cs" />
-    <Compile Include="RuntimeFieldHandle.cs" />
-    <Compile Include="RuntimeTypeHandle.cs" />
-    <Compile Include="SByte.cs" />
-    <Compile Include="Single.cs" />
-    <Compile Include="String.cs" />
-    <Compile Include="StringSplitOptions.cs" />
-    <Compile Include="SystemException.cs" />
-    <Compile Include="Text\Encoding.cs" />
-    <Compile Include="Threading\Interlocked.cs" />
-    <Compile Include="Threading\Monitor.cs" />
-    <Compile Include="Threading\Thread.cs" />
-    <Compile Include="Type.cs" />
-    <Compile Include="UInt16.cs" />
-    <Compile Include="UInt32.cs" />
-    <Compile Include="UInt64.cs" />
-    <Compile Include="UIntPtr.cs" />
-    <Compile Include="ValueType.cs" />
-    <Compile Include="Void.cs" />
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\CollectionDebuggerView.cs">
+      <Link>System.Collections.Generic\CollectionDebuggerView.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\Comparer.cs">
+      <Link>System.Collections.Generic\Comparer.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\Dictionary.cs">
+      <Link>System.Collections.Generic\Dictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\EqualityComparer.cs">
+      <Link>System.Collections.Generic\EqualityComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\ICollection.cs">
+      <Link>System.Collections.Generic\ICollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IComparer.cs">
+      <Link>System.Collections.Generic\IComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IDictionary.cs">
+      <Link>System.Collections.Generic\IDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IEnumerable.cs">
+      <Link>System.Collections.Generic\IEnumerable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IEnumerator.cs">
+      <Link>System.Collections.Generic\IEnumerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IEqualityComparer.cs">
+      <Link>System.Collections.Generic\IEqualityComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IList.cs">
+      <Link>System.Collections.Generic\IList.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IReadOnlyDictionary.cs">
+      <Link>System.Collections.Generic\IReadOnlyDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\IReadOnlyList.cs">
+      <Link>System.Collections.Generic\IReadOnlyList.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\KeyNotFoundException.cs">
+      <Link>System.Collections.Generic\KeyNotFoundException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\KeyValuePair.cs">
+      <Link>System.Collections.Generic\KeyValuePair.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.Generic\List.cs">
+      <Link>System.Collections.Generic\List.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.ObjectModel\Collection.cs">
+      <Link>System.Collections.ObjectModel\Collection.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.ObjectModel\KeyedCollection.cs">
+      <Link>System.Collections.ObjectModel\KeyedCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections.ObjectModel\ReadOnlyCollection.cs">
+      <Link>System.Collections.ObjectModel\ReadOnlyCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\ArrayList.cs">
+      <Link>System.Collections\ArrayList.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\CollectionDebuggerView.cs">
+      <Link>System.Collections\CollectionDebuggerView.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\Comparer.cs">
+      <Link>System.Collections\Comparer.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\DictionaryEntry.cs">
+      <Link>System.Collections\DictionaryEntry.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\Hashtable.cs">
+      <Link>System.Collections\Hashtable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\ICollection.cs">
+      <Link>System.Collections\ICollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IComparer.cs">
+      <Link>System.Collections\IComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IDictionary.cs">
+      <Link>System.Collections\IDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IDictionaryEnumerator.cs">
+      <Link>System.Collections\IDictionaryEnumerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IEnumerable.cs">
+      <Link>System.Collections\IEnumerable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IEnumerator.cs">
+      <Link>System.Collections\IEnumerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IEqualityComparer.cs">
+      <Link>System.Collections\IEqualityComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IHashCodeProvider.cs">
+      <Link>System.Collections\IHashCodeProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Collections\IList.cs">
+      <Link>System.Collections\IList.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\Calendar.cs">
+      <Link>System.Globalization\Calendar.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\CalendarWeekRule.cs">
+      <Link>System.Globalization\CalendarWeekRule.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\DateTimeFormatInfo.cs">
+      <Link>System.Globalization\DateTimeFormatInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\DaylightTime.cs">
+      <Link>System.Globalization\DaylightTime.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\GregorianCalendar.cs">
+      <Link>System.Globalization\GregorianCalendar.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\GregorianCalendarTypes.cs">
+      <Link>System.Globalization\GregorianCalendarTypes.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Reflection\AmbiguousMatchException.cs">
+      <Link>System.Reflection\AmbiguousMatchException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.CompilerServices\IndexerNameAttribute.cs">
+      <Link>System.Runtime.CompilerServices\IndexerNameAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.CompilerServices\IsVolatile.cs">
+      <Link>System.Runtime.CompilerServices\IsVolatile.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.CompilerServices\MethodCodeType.cs">
+      <Link>System.Runtime.CompilerServices\MethodCodeType.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.CompilerServices\MethodImplAttribute.cs">
+      <Link>System.Runtime.CompilerServices\MethodImplAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.CompilerServices\MethodImplOptions.cs">
+      <Link>System.Runtime.CompilerServices\MethodImplOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.ConstrainedExecution\CER.cs">
+      <Link>System.Runtime.ConstrainedExecution\CER.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.ConstrainedExecution\Consistency.cs">
+      <Link>System.Runtime.ConstrainedExecution\Consistency.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.ConstrainedExecution\CriticialFinalizerObject.cs">
+      <Link>System.Runtime.ConstrainedExecution\CriticialFinalizerObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.ConstrainedExecution\PrePrepareMethodAttribute.cs">
+      <Link>System.Runtime.ConstrainedExecution\PrePrepareMethodAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.ConstrainedExecution\ReliabilityContractAttribute.cs">
+      <Link>System.Runtime.ConstrainedExecution\ReliabilityContractAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\CharSet.cs">
+      <Link>System.Runtime.InteropServices\CharSet.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\ClassInterfaceAttribute.cs">
+      <Link>System.Runtime.InteropServices\ClassInterfaceAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\ClassInterfaceType.cs">
+      <Link>System.Runtime.InteropServices\ClassInterfaceType.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\ComDefaultInterfaceAttribute.cs">
+      <Link>System.Runtime.InteropServices\ComDefaultInterfaceAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\ComVisible.cs">
+      <Link>System.Runtime.InteropServices\ComVisible.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\DispIdAttribute.cs">
+      <Link>System.Runtime.InteropServices\DispIdAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\GuidAttribute.cs">
+      <Link>System.Runtime.InteropServices\GuidAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\LayoutKind.cs">
+      <Link>System.Runtime.InteropServices\LayoutKind.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.InteropServices\StructLayoutAttribute.cs">
+      <Link>System.Runtime.InteropServices\StructLayoutAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Security.Permissions\CodeAccessSecurityAttribute.cs">
+      <Link>System.Security.Permissions\CodeAccessSecurityAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Security.Permissions\SecurityAction.cs">
+      <Link>System.Security.Permissions\SecurityAction.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Security.Permissions\SecurityAttribute.cs">
+      <Link>System.Security.Permissions\SecurityAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Security.Permissions\SecurityPermissionAttribute.cs">
+      <Link>System.Security.Permissions\SecurityPermissionAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Security.Permissions\SecurityPermissionFlag.cs">
+      <Link>System.Security.Permissions\SecurityPermissionFlag.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Security\IPermission.cs">
+      <Link>System.Security\IPermission.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Action.cs">
+      <Link>System\Action.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ArgumentException.cs">
+      <Link>System\ArgumentException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ArgumentNullException.cs">
+      <Link>System\ArgumentNullException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ArgumentOutOfRangeException.cs">
+      <Link>System\ArgumentOutOfRangeException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ArithmeticException.cs">
+      <Link>System\ArithmeticException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Attribute.cs">
+      <Link>System\Attribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\AttributeTargets.cs">
+      <Link>System\AttributeTargets.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\AttributeUsageAttribute.cs">
+      <Link>System\AttributeUsageAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\CLSCompliantAttribute.cs">
+      <Link>System\CLSCompliantAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Comparison.cs">
+      <Link>System\Comparison.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Converter.cs">
+      <Link>System\Converter.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\DateTime.cs">
+      <Link>System\DateTime.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\DateTimeKind.cs">
+      <Link>System\DateTimeKind.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\DateTimeOffset.cs">
+      <Link>System\DateTimeOffset.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\DateTimeUtils.cs">
+      <Link>System\DateTimeUtils.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\DayOfWeek.cs">
+      <Link>System\DayOfWeek.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\DivideByZeroException.cs">
+      <Link>System\DivideByZeroException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\FormatException.cs">
+      <Link>System\FormatException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Funcs.cs">
+      <Link>System\Funcs.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Guid.cs">
+      <Link>System\Guid.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ICloneable.cs">
+      <Link>System\ICloneable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IComparable.cs">
+      <Link>System\IComparable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IConvertible.cs">
+      <Link>System\IConvertible.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IDisposable.cs">
+      <Link>System\IDisposable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IEquatable.cs">
+      <Link>System\IEquatable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IFormatProvider.cs">
+      <Link>System\IFormatProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IFormattable.cs">
+      <Link>System\IFormattable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IndexOutOfRangeException.cs">
+      <Link>System\IndexOutOfRangeException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\InvalidCastException.cs">
+      <Link>System\InvalidCastException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\InvalidOperationException.cs">
+      <Link>System\InvalidOperationException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\NonSerializedAttribute.cs">
+      <Link>System\NonSerializedAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\NotImplementedException.cs">
+      <Link>System\NotImplementedException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\NotSupportedException.cs">
+      <Link>System\NotSupportedException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Nullable.cs">
+      <Link>System\Nullable.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\NullReferenceException.cs">
+      <Link>System\NullReferenceException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ObjectDisposedException.cs">
+      <Link>System\ObjectDisposedException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ObsoleteAttribute.cs">
+      <Link>System\ObsoleteAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\OverflowException.cs">
+      <Link>System\OverflowException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Predicate.cs">
+      <Link>System\Predicate.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\RankException.cs">
+      <Link>System\RankException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\SerializableAttribute.cs">
+      <Link>System\SerializableAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\SystemException.cs">
+      <Link>System\SystemException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\TimeSpan.cs">
+      <Link>System\TimeSpan.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\TimeZone.cs">
+      <Link>System\TimeZone.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\TimeZoneNotFoundException.cs">
+      <Link>System\TimeZoneNotFoundException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\TypeCode.cs">
+      <Link>System\TypeCode.cs</Link>
+    </Compile>
+    <Compile Include="JSIL.Security\BitConverterLE.cs" />
+    <Compile Include="JSIL\Long.cs" />
+    <Compile Include="MonoTODOAttribute.cs" />
+    <Compile Include="System.Diagnostics\DebuggerBrowsableAttribute.cs" />
+    <Compile Include="System.Diagnostics\DebuggerBrowsableState.cs" />
+    <Compile Include="System.Diagnostics\DebuggerDisplayAttribute.cs" />
+    <Compile Include="System.Diagnostics\DebuggerTypeProxy.cs" />
+    <Compile Include="System.Globalization\CCGregorianCalendar.cs" />
+    <Compile Include="System.Reflection\Assembly.cs" />
+    <Compile Include="System.Runtime.CompilerServices\RuntimeHelpers.cs" />
+    <Compile Include="System.Runtime.Serialization\IDeserializationCallback.cs" />
+    <Compile Include="System.Runtime.Serialization\IObjectReference.cs" />
+    <Compile Include="System.Security.Cryptography\RandomNumberGenerator.cs" />
+    <Compile Include="System\Activator.cs" />
+    <Compile Include="System\Array.cs" />
+    <Compile Include="System\Boolean.cs" />
+    <Compile Include="System\Byte.cs" />
+    <Compile Include="System\Char.cs" />
+    <Compile Include="System\Console.cs" />
+    <Compile Include="System\Decimal.cs" />
+    <Compile Include="System\Delegate.cs" />
+    <Compile Include="System\Double.cs" />
+    <Compile Include="System\Enum.cs" />
+    <Compile Include="System\Environment.cs" />
+    <Compile Include="System\EventArgs.cs" />
+    <Compile Include="System\EventHandler.cs" />
+    <Compile Include="System\Exception.cs" />
+    <Compile Include="System\Flags.cs" />
+    <Compile Include="System\Int16.cs" />
+    <Compile Include="System\Int32.cs" />
+    <Compile Include="System\Int64.cs" />
+    <Compile Include="System\IntPtr.cs" />
+    <Compile Include="System\Locale.cs" />
+    <Compile Include="System\Math.cs" />
+    <Compile Include="System\MulticastDelegate.cs" />
+    <Compile Include="System\Object.cs" />
+    <Compile Include="System\ParamArrayAttribute.cs" />
+    <Compile Include="System\Random.cs" />
+    <Compile Include="System.Reflection\ConstructorInfo.cs" />
+    <Compile Include="System.Reflection\DefaultMemberAttribute.cs" />
+    <Compile Include="System.Reflection\MemberFilter.cs" />
+    <Compile Include="System.Reflection\MethodBase.cs" />
+    <Compile Include="System.Reflection\MethodInfo.cs" />
+    <Compile Include="System.Runtime.InteropServices\OutAttribute.cs" />
+    <Compile Include="System.Runtime.InteropServices\_Attribute.cs" />
+    <Compile Include="System.Runtime.InteropServices\_Exception.cs" />
+    <Compile Include="System.Runtime.Versioning\TargetFrameworkAttribute.cs" />
+    <Compile Include="System\RuntimeFieldHandle.cs" />
+    <Compile Include="System\RuntimeTypeHandle.cs" />
+    <Compile Include="System\SByte.cs" />
+    <Compile Include="System.Runtime.Serialization\ISerializeable.cs" />
+    <Compile Include="System\Single.cs" />
+    <Compile Include="System\String.cs" />
+    <Compile Include="System\StringSplitOptions.cs" />
+    <Compile Include="System.Text\Encoding.cs" />
+    <Compile Include="System.Text\StringBuilder.cs" />
+    <Compile Include="System.Threading\Interlocked.cs" />
+    <Compile Include="System.Threading\Monitor.cs" />
+    <Compile Include="System.Threading\Thread.cs" />
+    <Compile Include="System\Type.cs" />
+    <Compile Include="System\UInt16.cs" />
+    <Compile Include="System\UInt32.cs" />
+    <Compile Include="System\UInt64.cs" />
+    <Compile Include="System\UIntPtr.cs" />
+    <Compile Include="System\ValueType.cs" />
+    <Compile Include="System\Void.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

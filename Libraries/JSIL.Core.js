@@ -168,21 +168,21 @@ JSIL.DeclareNamespace = function (name, sealed) {
 }
 
 JSIL.DeclareNamespace("System");
-JSIL.DeclareNamespace("System.Collections");
-JSIL.DeclareNamespace("System.Collections.Generic");
+//JSIL.DeclareNamespace("System.Collections");
+//JSIL.DeclareNamespace("System.Collections.Generic");
 JSIL.DeclareNamespace("System.Array", false);
-JSIL.DeclareNamespace("System.Delegate", false);
+//JSIL.DeclareNamespace("System.Delegate", false);
 JSIL.DeclareNamespace("System.Enum", false);
-JSIL.DeclareNamespace("System.MulticastDelegate", false);
+//JSIL.DeclareNamespace("System.MulticastDelegate", false);
 //JSIL.DeclareNamespace("System.Console", false);
-JSIL.DeclareNamespace("System.Text");
-JSIL.DeclareNamespace("System.Threading");
+//JSIL.DeclareNamespace("System.Text");
+//JSIL.DeclareNamespace("System.Threading");
 //JSIL.DeclareNamespace("System.Threading.Interlocked", false);
 //JSIL.DeclareNamespace("System.Threading.Monitor", false);
-JSIL.DeclareNamespace("System.Globalization", false);
-JSIL.DeclareNamespace("System.Environment", false);
-JSIL.DeclareNamespace("System.Runtime", false);
-JSIL.DeclareNamespace("System.Runtime.InteropServices", false);
+//JSIL.DeclareNamespace("System.Globalization", false);
+//JSIL.DeclareNamespace("System.Environment", false);
+//JSIL.DeclareNamespace("System.Runtime", false);
+//JSIL.DeclareNamespace("System.Runtime.InteropServices", false);
 
 JSIL.DeclareNamespace("JSIL.Array");
 JSIL.DeclareNamespace("JSIL.Delegate");
@@ -1746,30 +1746,30 @@ JSIL.Interface.prototype.Of = function (T) {
   return this;
 };
 
-JSIL.MakeInterface("System.IDisposable", [], {
-  "Dispose": Function
-});
-JSIL.MakeInterface("System.IEquatable`1", ["T"], {
-  "Equals": Function
-});
+//JSIL.MakeInterface("System.IDisposable", [], {
+//  "Dispose": Function
+//});
+//JSIL.MakeInterface("System.IEquatable`1", ["T"], {
+//  "Equals": Function
+//});
 
-JSIL.MakeInterface("System.Collections.IEnumerator", [], {
-  "MoveNext": Function,
-  "get_Current": Function,
-  "Reset": Function,
-  "Current": Property
-});
-JSIL.MakeInterface("System.Collections.IEnumerable", [], {
-  "GetEnumerator": Function
-});
+//JSIL.MakeInterface("System.Collections.IEnumerator", [], {
+//  "MoveNext": Function,
+//  "get_Current": Function,
+//  "Reset": Function,
+//  "Current": Property
+//});
+//JSIL.MakeInterface("System.Collections.IEnumerable", [], {
+//  "GetEnumerator": Function
+//});
 
-JSIL.MakeInterface("System.Collections.Generic.IEnumerator`1", ["T"], {
-  "get_Current": Function,
-  "Current": Property
-});
-JSIL.MakeInterface("System.Collections.Generic.IEnumerable`1", ["T"], {
-  "GetEnumerator": Function
-});
+//JSIL.MakeInterface("System.Collections.Generic.IEnumerator`1", ["T"], {
+//  "get_Current": Function,
+//  "Current": Property
+//});
+//JSIL.MakeInterface("System.Collections.Generic.IEnumerable`1", ["T"], {
+//  "GetEnumerator": Function
+//});
 
 System.Enum.Parse = function (type, value) {
   var num = Number(value);
@@ -2096,3 +2096,46 @@ JSIL.Delegate.New = function (typeName, object, method) {
   Object.seal(result);
   return result;
 }
+
+JSIL.StringFormat = function (format) {
+  format = String(format);
+
+  var regex = new RegExp("{([0-9]*)(?::([^}]*))?}", "g");
+  var match = null;
+
+  var values = Array.prototype.slice.call(arguments, 1);
+
+  if ((values.length == 1) && JSIL.IsArray(values[0]))
+    values = values[0];
+
+  var matcher = function (match, index, valueFormat, offset, str) {
+    index = parseInt(index);
+
+    var value = values[index];
+
+    if (valueFormat) {
+
+      switch (valueFormat[0]) {
+        case 'f':
+        case 'F':
+          var digits = parseInt(valueFormat.substr(1));
+          return parseFloat(value).toFixed(digits);
+
+        default:
+          throw new Error("Unsupported format string: " + valueFormat);
+      }
+    } else {
+
+      if (typeof (value) === "boolean") {
+        if (value)
+          return "True";
+        else
+          return "False";
+      } else {
+        return String(value);
+      }
+    }
+  };
+
+  return format.replace(regex, matcher);
+};

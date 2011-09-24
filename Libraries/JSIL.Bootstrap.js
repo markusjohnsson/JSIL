@@ -104,16 +104,6 @@ JSIL.MulticastDelegate.New = function (delegates) {
   return result;
 };
 
-System.Action = JSIL.MakeDelegateType("System.Action", "Action");
-System.Action$b1 = JSIL.MakeDelegateType("System.Action`1", "Action`1");
-System.Action$b2 = JSIL.MakeDelegateType("System.Action`2", "Action`2");
-System.Action$b3 = JSIL.MakeDelegateType("System.Action`3", "Action`3");
-
-System.Func = JSIL.MakeDelegateType("System.Func", "Func");
-System.Func$b1 = JSIL.MakeDelegateType("System.Func`1", "Func`1");
-System.Func$b2 = JSIL.MakeDelegateType("System.Func`2", "Func`2");
-System.Func$b3 = JSIL.MakeDelegateType("System.Func`3", "Func`3");
-
 JSIL.MakeClass(Error, "System.Exception", true);
 System.Exception.prototype._Message = null;
 System.Exception.prototype._ctor = function (message) {
@@ -177,7 +167,7 @@ System.String.Concat = function (firstValue) {
     return JSIL.ConcatString(Array.prototype.slice.call(arguments));
   }
 }
-System.String.Empty = '';
+//System.String.Empty = '';
 System.String.Format = function (format) {
   format = String(format);
 

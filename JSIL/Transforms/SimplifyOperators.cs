@@ -89,7 +89,9 @@ namespace JSIL.Transforms {
 
                             break;
                         default:
-                            throw new NotImplementedException(method.Method.Member.FullName);
+                            VisitChildren(ie);
+                            break;
+                            //throw new NotImplementedException(method.Method.Member.FullName);
                     }
 
                     return;

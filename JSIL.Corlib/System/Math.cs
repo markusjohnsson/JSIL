@@ -1,0 +1,64 @@
+﻿
+using JSIL.Meta;
+using JSIL.Proxy;
+namespace System
+{
+    public static class Math
+    {
+        [JSRuntimeDispatch]
+        [JSExternal]
+        public extern static AnyType Min(params AnyType[] arguments);
+
+        public static int Min(int first, int second)
+        {
+            return first < second ? first : second;
+        }
+
+        [JSRuntimeDispatch]
+        [JSExternal]
+        public extern static AnyType Max(params AnyType[] arguments);
+
+        [JSRuntimeDispatch]
+        [JSExternal]
+        public extern static int Max(params int[] arguments);
+
+        [JSReplacement("Math.abs($value)")]
+        public extern static int Abs(int value);
+
+        [JSReplacement("Math.abs($value)")]
+        public extern static long Abs(long value);
+        
+        [JSReplacement("Math.abs($value)")]
+        public extern static float Abs(float value);
+
+        [JSReplacement("Math.abs($value)")]
+        public extern static double Abs(double value);
+
+        [JSReplacement("Math.sqrt($d)")]
+        public extern static double Sqrt(double d);
+
+        [JSReplacement("Math.cos($d)")]
+        public extern static double Cos(double d);
+
+        [JSReplacement("Math.sin($d)")]
+        public extern static double Sin(double d);
+
+        [JSReplacement("Math.tan($d)")]
+        public extern static double Tan(double d);
+
+        [JSReplacement("Math.round($d)")]
+        public extern static double Round(double d);
+
+        [JSReplacement("Math.floor($d)")]
+        public extern static double Floor(double d);
+
+        [JSReplacement("Math.ceil($d)")]
+        public extern static double Ceiling(double d);
+
+        [JSReplacement("Math.abs($value)")]
+        public extern static double Pow(double p, int num_parsed);
+        
+        [JSReplacement("Math.abs($value)")]
+        public extern static double Log(double p);
+    }
+}
