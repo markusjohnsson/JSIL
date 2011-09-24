@@ -10,9 +10,6 @@
 [submodule "Examples/PlatformerStarterKit"]
 	path = Examples/PlatformerStarterKit
 	url = git@github.com:kevingadd/PlatformerStarterKit.git
-[submodule "Dependencies/mono"]
-	path = Dependencies/mono
-	url = git@github.com:/mono/mono.git
 [submodule "Upstream/mono"]
 	path = Upstream/mono
-	url = git@github.com:/mono/mono.git
+	url = git@github.com:/markusjohnsson/mono.git
