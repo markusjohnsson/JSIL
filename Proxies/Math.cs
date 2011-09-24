@@ -41,7 +41,14 @@ namespace JSIL.Proxies {
         }
 
         [JSReplacement("Math.tan($d)")]
-        public static double Tan (double d) {
+        public static double Tan(double d)
+        {
+            throw new InvalidOperationException();
+        }
+
+        [JSReplacement("Math.log($d)")]
+        public static double Log(double d)
+        {
             throw new InvalidOperationException();
         }
 
