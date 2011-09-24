@@ -487,6 +487,7 @@ namespace JSIL.Transforms {
             Trace(method.Member.FullName);
         }
 
+        public static int depth = 0;
         public bool IsPure {
             get {
                 if (Data == null)
@@ -500,8 +501,14 @@ namespace JSIL.Transforms {
                     if (secondPass == null)
                         return false;
 
+                    depth++;
+
+                    if (depth > 1000)
+                        return false;
+
                     if (!secondPass.IsPure)
                         return false;
+                    depth--;
                 }
 
                 return _IsPure;
