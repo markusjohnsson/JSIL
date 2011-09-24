@@ -388,7 +388,6 @@
       <Link>System\TypeCode.cs</Link>
     </Compile>
     <Compile Include="JSIL.Security\BitConverterLE.cs" />
-    <Compile Include="JSIL\Long.cs" />
     <Compile Include="MonoTODOAttribute.cs" />
     <Compile Include="System.Diagnostics\DebuggerBrowsableAttribute.cs" />
     <Compile Include="System.Diagnostics\DebuggerBrowsableState.cs" />
@@ -455,6 +454,7 @@
     <Compile Include="System\Void.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="JSIL\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
