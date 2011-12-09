@@ -44,10 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libraries\JSIL.Core.js">
-      <Link>libs\JSIL.Core.js</Link>
+      <Link>JSIL.Core.js</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="libs\JSIL.Bootstrap.js">
+    <Content Include="JSIL.Bootstrap.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="TestPage.htm">
@@ -56,8 +56,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>$(SolutionDir)\bin\JSILc.exe CorlibTest.dll --nodefaults</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
