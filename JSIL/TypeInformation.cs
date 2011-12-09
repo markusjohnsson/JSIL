@@ -1361,6 +1361,8 @@ namespace JSIL.Internal {
             T member, ProxyInfo[] proxies, 
             bool isIgnored, bool isExternal, bool isFromProxy
         ) {
+            if (identifier.Name == "<System.Collections.ICollection.CopyTo>b__0")
+                Debug.WriteLine("WA");
             Identifier = identifier;
 
             _ReadPolicy = JSReadPolicy.Unmodified;

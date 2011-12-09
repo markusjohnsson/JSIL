@@ -32,3 +32,6 @@ Tests/*Cases/*.js
 /jsil.org/demos/Libraries
 *.jsillog
 /Examples/obj
+/JSIL.Corlib/obj
+/CorlibTest/obj
+/CorlibTest/bin

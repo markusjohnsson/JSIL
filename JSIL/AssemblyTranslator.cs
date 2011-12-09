@@ -60,24 +60,24 @@ namespace JSIL {
             } else {
                 TypeInfoProvider = new JSIL.TypeInfoProvider();
 
-                Assembly proxyAssembly = null;
-                var proxyPath = Path.GetDirectoryName(Util.GetPathOfAssembly(Assembly.GetExecutingAssembly()));
+                //Assembly proxyAssembly = null;
+                //var proxyPath = Path.GetDirectoryName(Util.GetPathOfAssembly(Assembly.GetExecutingAssembly()));
 
-                if (!configuration.FrameworkVersion.HasValue || configuration.FrameworkVersion == 4.0) {
-                    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.4.0.dll"));
-                } else if (configuration.FrameworkVersion <= 3.5) {
-                    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.3.5.dll"));
-                } else {
-                    throw new ArgumentOutOfRangeException("FrameworkVersion", "Framework version not supported");
-                }
+                //if (!configuration.FrameworkVersion.HasValue || configuration.FrameworkVersion == 4.0) {
+                //    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.4.0.dll"));
+                //} else if (configuration.FrameworkVersion <= 3.5) {
+                //    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.3.5.dll"));
+                //} else {
+                //    throw new ArgumentOutOfRangeException("FrameworkVersion", "Framework version not supported");
+                //}
 
-                if (proxyAssembly == null)
-                    throw new InvalidOperationException("No core proxy assembly was loaded.");
+                //if (proxyAssembly == null)
+                //    throw new InvalidOperationException("No core proxy assembly was loaded.");
 
-                AddProxyAssembly(proxyAssembly);
+                //AddProxyAssembly(proxyAssembly);
 
-                foreach (var fn in configuration.Assemblies.Proxies)
-                    AddProxyAssembly(fn);
+                //foreach (var fn in configuration.Assemblies.Proxies)
+                //    AddProxyAssembly(fn);
             }
         }
 

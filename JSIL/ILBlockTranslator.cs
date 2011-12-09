@@ -1882,7 +1882,7 @@ namespace JSIL {
                             )
                         );
 
-                    if (emitInline) {
+                    if (true) {
                         JSFunctionExpression function;
                         // It's possible that the method we're using wasn't initially translated/analyzed because it's
                         //  a compiler-generated method or part of a compiler generated type

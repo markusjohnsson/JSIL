@@ -43,11 +43,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Libraries\JSIL.Core.js">
-      <Link>JSIL.Core.js</Link>
+    <Content Include="..\Libraries\JSIL.Bootstrap.js">
+      <Link>JSIL.Bootstrap.js</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="JSIL.Bootstrap.js">
+    <Content Include="..\Libraries\JSIL.Core.js">
+      <Link>JSIL.Core.js</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="TestPage.htm">
