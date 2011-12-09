@@ -236,8 +236,10 @@ namespace JSIL {
             )
                 return new JSUntranslatableExpression(node);
 
+            var finalType = node.ExpectedType ?? node.InferredType;
+
             return new JSBinaryOperatorExpression(
-                op, lhs, rhs, node.ExpectedType ?? node.InferredType
+                op, lhs, rhs, finalType
             );
         }
 
@@ -405,7 +407,7 @@ namespace JSIL {
             }
         }
 
-        public static TypeDefinition GetTypeDefinition (TypeReference typeRef) {
+        public static TypeDefinition GetTypeDefinition (TypeReference typeRef, bool resolveTypedArrays = true) {
             if (typeRef == null)
                 return null;
 
@@ -428,7 +430,7 @@ namespace JSIL {
                 }
             } while (unwrapped);
 
-            if (typeRef is ArrayType)
+            if (resolveTypedArrays && (typeRef is ArrayType))
                 return new TypeReference(ts.Object.Namespace, "Array", ts.Object.Module, ts.Object.Scope).ResolveOrThrow();
             else if (IsIgnoredType(typeRef))
                 return null;
@@ -1003,6 +1005,24 @@ namespace JSIL {
         // MSIL Instructions
         //
 
+        protected JSExpression Translate_NullableOf (ILExpression node) {
+            var inner = TranslateNode(node.Arguments[0]);
+            var innerType = inner.GetExpectedType(TypeSystem);
+
+            var nullableType = new TypeReference("System", "Nullable`1", TypeSystem.Object.Module, TypeSystem.Object.Scope);
+            var nullableGenericType = new GenericInstanceType(nullableType);
+            nullableGenericType.GenericArguments.Add(innerType);
+
+            return JSChangeTypeExpression.New(inner, TypeSystem, nullableGenericType);
+        }
+
+        protected JSExpression Translate_ValueOf (ILExpression node) {
+            var inner = TranslateNode(node.Arguments[0]);
+            var innerType = (GenericInstanceType)inner.GetExpectedType(TypeSystem);
+
+            return JSChangeTypeExpression.New(inner, TypeSystem, innerType.GenericArguments.First());
+        }
+
         protected JSExpression Translate_Clt (ILExpression node) {
             return Translate_BinaryOp(node, JSOperator.LessThan);
         }
@@ -1036,9 +1056,26 @@ namespace JSIL {
             return Translate_EqualityComparison(node, true);
         }
 
+        protected JSExpression Translate_Cne (ILExpression node) {
+            return Translate_EqualityComparison(node, false);
+        }
+
+        protected JSExpression Translate_Cle (ILExpression node) {
+            return Translate_BinaryOp(node, JSOperator.LessThanOrEqual);
+        }
+
+        protected JSExpression Translate_Cge (ILExpression node) {
+            return Translate_BinaryOp(node, JSOperator.GreaterThanOrEqual);
+        }
+
         protected JSBinaryOperatorExpression Translate_CompoundAssignment (ILExpression node) {
-            JSAssignmentOperator op;
-            var translated = (JSBinaryOperatorExpression)TranslateNode(node.Arguments[0]);
+            JSAssignmentOperator op = null;
+            var translated = TranslateNode(node.Arguments[0]);
+            if (translated is JSResultReferenceExpression)
+                translated = ((JSResultReferenceExpression)translated).Referent;
+
+            var boe = translated as JSBinaryOperatorExpression;
+            var invocation = translated as JSInvocationExpression;
 
             switch (node.Arguments[0].Code) {
                 case ILCode.Add:
@@ -1050,12 +1087,6 @@ namespace JSIL {
                 case ILCode.Mul:
                     op = JSOperator.MultiplyAssignment;
                     break;
-                // We can't emit the /= operator since its semantics differ from C#'s
-                case ILCode.Div:
-                    return new JSBinaryOperatorExpression(
-                        JSOperator.Assignment, translated.Left, 
-                        translated, translated.ExpectedType
-                    );
                 case ILCode.Rem:
                     op = JSOperator.RemainderAssignment;
                     break;
@@ -1077,13 +1108,29 @@ namespace JSIL {
                 case ILCode.Xor:
                     op = JSOperator.BitwiseXorAssignment;
                     break;
-                default:
-                    return null;
             }
 
-            return new JSBinaryOperatorExpression(
-                op, translated.Left, translated.Right, translated.ExpectedType
-            );
+            if (boe != null) {
+                if (op != null) {
+                    return new JSBinaryOperatorExpression(
+                        op, boe.Left, boe.Right, boe.ExpectedType
+                    );
+                } else {
+                    // Unimplemented compound operators, and operators with semantics that don't match JS, must be emitted normally
+                    return new JSBinaryOperatorExpression(
+                        JSOperator.Assignment, boe.Left,
+                        boe, boe.ExpectedType
+                    );
+                }
+            } else if ((invocation != null) && (invocation.Arguments[0] is JSReferenceExpression)) {
+                // Some compound expressions involving structs produce a call instruction instead of a binary expression
+                return new JSBinaryOperatorExpression(
+                    JSOperator.Assignment, invocation.Arguments[0],
+                    invocation, invocation.GetExpectedType(TypeSystem)
+                );
+            } else {
+                throw new NotImplementedException(String.Format("Compound assignments of this type not supported: '{0}'", node));
+            }
         }
 
         protected JSTernaryOperatorExpression Translate_TernaryOp (ILExpression node) {
@@ -1477,7 +1524,10 @@ namespace JSIL {
                 typeInfo = TypeInfo.Get(expressionType);
             }
 
-            if ((typeInfo != null) && (typeInfo.EnumMembers.Count > 0)) {
+            if (
+                (typeInfo != null) && 
+                (typeInfo.EnumMembers != null) && (typeInfo.EnumMembers.Count > 0)
+            ) {
                 EnumMemberInfo[] enumMembers = null;
                 if (typeInfo.IsFlagsEnum) {
                     if (value == 0) {
@@ -1808,63 +1858,74 @@ namespace JSIL {
             return new JSGotoExpression(targetLabel.Name);
         }
 
+        protected JSExpression Translate_Newobj_Delegate (ILExpression node, MethodReference constructor, JSExpression[] arguments) {
+            var thisArg = arguments[0];
+            var methodRef = arguments[1];
+
+            var methodDot = methodRef as JSDotExpression;
+
+            // Detect compiler-generated lambda methods
+            if (methodDot != null) {
+                var methodMember = methodDot.Member as JSMethod;
+
+                if (methodMember != null) {
+                    var methodDef = methodMember.Method.Member;
+
+                    bool compilerGenerated = methodDef.IsCompilerGeneratedOrIsInCompilerGeneratedClass();
+                    bool emitInline = (
+                            methodDef.IsPrivate && compilerGenerated
+                        ) || (
+                            compilerGenerated &&
+                            TypesAreEqual(
+                                thisArg.GetExpectedType(TypeSystem),
+                                methodDef.DeclaringType
+                            )
+                        );
+
+                    if (emitInline) {
+                        JSFunctionExpression function;
+                        // It's possible that the method we're using wasn't initially translated/analyzed because it's
+                        //  a compiler-generated method or part of a compiler generated type
+                        if (!Translator.FunctionCache.TryGetExpression(methodMember.QualifiedIdentifier, out function)) {
+                            function = Translator.TranslateMethodExpression(Context, methodDef, methodDef);
+                        }
+
+                        var thisArgVar = thisArg as JSVariable;
+
+                        // If the closure references the outer 'this' variable, we need to explicitly bind it to the
+                        //  closure's local 'this' reference (by setting useBind to true to use Function.bind).
+                        // It is also possible for the this-reference to be a variable with a name that collides with
+                        //  the name of a local variable within the closure. The solution in this case is the same:
+                        //  we make it the closure's local 'this' reference using Function.bind.
+                        if (
+                            (thisArgVar != null) &&
+                            (thisArgVar.IsThis || function.AllVariables.ContainsKey(thisArgVar.Name))
+                        ) {
+                            return new JSLambda(function, thisArgVar, true);
+                        } else {
+                            return new JSLambda(
+                                function, thisArg, !(
+                                    thisArg.IsNull || thisArg is JSNullLiteral
+                                )
+                            );
+                        }
+                    } else if (methodMember.Method.IsIgnored) {
+                        throw new InvalidOperationException("Ignored method not emitted inline");
+                    }
+                }
+            }
+
+            return JSIL.NewDelegate(
+                constructor.DeclaringType,
+                thisArg, methodRef
+            );
+        }
+
         protected JSExpression Translate_Newobj (ILExpression node, MethodReference constructor) {
             var arguments = Translate(node.Arguments);
 
             if (IsDelegateType(constructor.DeclaringType)) {
-                var thisArg = arguments[0];
-                var methodRef = arguments[1];
-
-                var methodDot = methodRef as JSDotExpression;
-
-                // Detect compiler-generated lambda methods
-                if (methodDot != null) {
-                    var methodMember = methodDot.Member as JSMethod;
-
-                    if (methodMember != null) {
-                        var methodDef = methodMember.Method.Member;
-
-                        bool emitInline = (
-                                methodDef.IsPrivate && 
-                                methodDef.IsCompilerGenerated()
-                            ) || (
-                                methodDef.DeclaringType.IsCompilerGenerated() &&
-                                TypesAreEqual(
-                                    thisArg.GetExpectedType(TypeSystem),
-                                    methodDef.DeclaringType
-                                )
-                            );
-
-                        if (emitInline) {
-                            JSFunctionExpression function;
-                            // It's possible that the method we're using wasn't initially translated/analyzed because it's
-                            //  a compiler-generated method or part of a compiler generated type
-                            if (!Translator.FunctionCache.TryGetExpression(methodMember.QualifiedIdentifier, out function)) {
-                                function = Translator.TranslateMethodExpression(Context, methodDef, methodDef);
-                            }
-
-                            var thisArgVar = thisArg as JSVariable;
-
-                            if ((thisArgVar != null) && thisArgVar.IsThis) {
-                                var outerThis = DeclareVariable(new JSVariable(
-                                    "$outer_this", thisArgVar.Type, ThisMethodReference, 
-                                    new JSThisParameter(thisArgVar.Type, ThisMethodReference)
-                                ));
-
-                                thisArg = thisArgVar = outerThis;
-                            }// else if (methodDef.HasThis && function.AllVariables.ContainsKey("this")) {
-
-                            return new JSLambda(
-                                function, thisArg
-                            );
-                        }
-                    }
-                }
-
-                return JSIL.NewDelegate(
-                    constructor.DeclaringType,
-                    thisArg, methodRef
-                );
+                return Translate_Newobj_Delegate(node, constructor, arguments);
             } else if (constructor.DeclaringType.IsArray) {
                 return JSIL.NewMultidimensionalArray(
                     constructor.DeclaringType.GetElementType(), arguments
@@ -1939,8 +2000,7 @@ namespace JSIL {
         }
 
         protected JSExpression Translate_InitCollection (ILExpression node) {
-            TypeReference inferredType = null;
-            var values = new List<JSExpression>();
+            var values = new List<JSArrayExpression>();
 
             for (var i = 1; i < node.Arguments.Count; i++) {
                 var translated = TranslateNode(node.Arguments[i]);
@@ -1950,18 +2010,13 @@ namespace JSIL {
 
                 var invocation = (JSInvocationExpression)translated;
 
-                var valueType = invocation.Arguments[0].GetExpectedType(TypeSystem);
-
-                if (inferredType == null)
-                    inferredType = valueType;
-                else if (inferredType.FullName != valueType.FullName)
-                    Console.Error.WriteLine("Mixed-type collection initializers not supported: {0}", node);
-
-                values.Add(invocation.Arguments[0]);
+                // each JSArrayExpression added to values contains the arguments
+                // to the Add method which is called by CollectionInitializer.Apply
+                values.Add(new JSArrayExpression(TypeSystem.Object, invocation.Arguments.ToArray()));
             }
 
             var initializer = JSIL.NewCollectionInitializer(
-                new JSArrayExpression(inferredType, values.ToArray())
+                values
             );
 
             return new JSBinaryOperatorExpression(

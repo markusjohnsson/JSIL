@@ -49,8 +49,7 @@ namespace JSIL {
         public readonly TypeSystem TypeSystem;
         public readonly JSSpecialIdentifiers JS;
 
-        public readonly JSDotExpression GlobalNamespace,
-            CopyMembers;
+        public readonly JSDotExpression GlobalNamespace, CopyMembers;
 
         public JSILIdentifier (TypeSystem typeSystem, JSSpecialIdentifiers js) {
             TypeSystem = typeSystem;
@@ -76,6 +75,13 @@ namespace JSIL {
             return JSInvocationExpression.InvokeStatic(
                 Dot("CheckType", TypeSystem.Boolean),
                 new[] { expression, new JSType(targetType) }, true
+            );
+        }
+
+        public JSInvocationExpression GetType (JSExpression expression) {
+            return JSInvocationExpression.InvokeStatic(
+                Dot("GetType", new TypeReference("System", "Type", TypeSystem.Object.Module, TypeSystem.Object.Scope)),
+                new[] { expression }, true
             );
         }
 
@@ -166,10 +172,10 @@ namespace JSIL {
             );
         }
 
-        public JSNewExpression NewCollectionInitializer (JSArrayExpression values) {
+        public JSNewExpression NewCollectionInitializer (IEnumerable<JSArrayExpression> values) {
             return new JSNewExpression(
                 Dot("CollectionInitializer", TypeSystem.Object),
-                null, values.Values.ToArray()
+                null, values.ToArray()
             );
         }
 

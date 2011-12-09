@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,10 +9,16 @@ using Mono.Cecil;
 
 namespace JSIL {
     public class TypeInfoProvider : ITypeInfoSource {
-        public readonly HashSet<AssemblyDefinition> Assemblies = new HashSet<AssemblyDefinition>();
-        public readonly Dictionary<TypeIdentifier, ProxyInfo> TypeProxies = new Dictionary<TypeIdentifier, ProxyInfo>();
-        public readonly Dictionary<TypeIdentifier, TypeInfo> TypeInformation = new Dictionary<TypeIdentifier, TypeInfo>();
-        public readonly Dictionary<string, ModuleInfo> ModuleInformation = new Dictionary<string, ModuleInfo>();
+        protected readonly HashSet<AssemblyDefinition> Assemblies = new HashSet<AssemblyDefinition>();
+        protected readonly ConcurrentCache<TypeIdentifier, TypeInfo> TypeInformation;
+        protected readonly ConcurrentCache<string, ModuleInfo> ModuleInformation;
+        protected readonly Dictionary<TypeIdentifier, ProxyInfo> TypeProxies = new Dictionary<TypeIdentifier, ProxyInfo>();
+        protected readonly Dictionary<string, HashSet<ProxyInfo>> DirectProxiesByTypeName = new Dictionary<string, HashSet<ProxyInfo>>();
+
+        public TypeInfoProvider () {
+            TypeInformation = new ConcurrentCache<TypeIdentifier, TypeInfo>(Environment.ProcessorCount, 1024);
+            ModuleInformation = new ConcurrentCache<string, ModuleInfo>(Environment.ProcessorCount, 128);
+        }
 
         protected IEnumerable<TypeDefinition> ProxyTypesFromAssembly (AssemblyDefinition assembly) {
             foreach (var module in assembly.Modules) {
@@ -27,23 +34,24 @@ namespace JSIL {
         }
 
         public void Remove (params AssemblyDefinition[] assemblies) {
+            lock (Assemblies)
             foreach (var assembly in assemblies) {
                 Assemblies.Remove(assembly);
 
                 foreach (var module in assembly.Modules) {
-                    ModuleInformation.Remove(module.FullyQualifiedName);
+                    ModuleInformation.TryRemove(module.FullyQualifiedName);
 
                     foreach (var type in module.Types) {
                         var identifier = new TypeIdentifier(type);
 
                         TypeProxies.Remove(identifier);
-                        TypeInformation.Remove(identifier);
+                        TypeInformation.TryRemove(identifier);
 
                         foreach (var nt in type.NestedTypes) {
                             var ni = new TypeIdentifier(nt);
 
                             TypeProxies.Remove(ni);
-                            TypeInformation.Remove(ni);
+                            TypeInformation.TryRemove(ni);
                         }
                     }
                 }
@@ -51,14 +59,35 @@ namespace JSIL {
         }
 
         public void AddProxyAssemblies (params AssemblyDefinition[] assemblies) {
+            HashSet<ProxyInfo> pl;
+
+            lock (Assemblies)
             foreach (var asm in assemblies) {
                 if (Assemblies.Contains(asm))
                     continue;
                 else
                     Assemblies.Add(asm);
 
-                foreach (var proxyType in ProxyTypesFromAssembly(asm))
-                    TypeProxies.Add(new TypeIdentifier(proxyType), new ProxyInfo(proxyType));
+                foreach (var proxyType in ProxyTypesFromAssembly(asm)) {
+                    var proxyInfo = new ProxyInfo(proxyType);
+                    TypeProxies.Add(new TypeIdentifier(proxyType), proxyInfo);
+
+                    foreach (var typeref in proxyInfo.ProxiedTypes) {
+                        var name = typeref.FullName;
+
+                        if (!DirectProxiesByTypeName.TryGetValue(name, out pl))
+                            DirectProxiesByTypeName[name] = pl = new HashSet<ProxyInfo>();
+
+                        pl.Add(proxyInfo);
+                    }
+
+                    foreach (var name in proxyInfo.ProxiedTypeNames) {
+                        if (!DirectProxiesByTypeName.TryGetValue(name, out pl))
+                            DirectProxiesByTypeName[name] = pl = new HashSet<ProxyInfo>();
+
+                        pl.Add(proxyInfo);
+                    }
+                }
             }
         }
 
@@ -67,24 +96,19 @@ namespace JSIL {
                 throw new ArgumentNullException("module");
 
             var fullName = module.FullyQualifiedName;
-
-            ModuleInfo result;
-            if (!ModuleInformation.TryGetValue(fullName, out result))
-                ModuleInformation[fullName] = result = new ModuleInfo(module);
-
-            return result;
+            return ModuleInformation.GetOrCreate(
+                fullName, 
+                () => new ModuleInfo(module)
+            );
         }
 
         private void EnqueueType (OrderedDictionary<TypeIdentifier, TypeDefinition> queue, TypeReference typeReference, LinkedListNode<TypeIdentifier> before = null) {
             var identifier = new TypeIdentifier(typeReference);
 
-            if (TypeInformation.ContainsKey(identifier))
-                return;
-            else if (queue.ContainsKey(identifier))
+            if (queue.ContainsKey(identifier))
                 return;
 
-            TypeInfo result;
-            if (!TypeInformation.TryGetValue(identifier, out result)) {
+            if (!TypeInformation.ContainsKey(identifier)) {
                 var typedef = ILBlockTranslator.GetTypeDefinition(typeReference);
                 if (typedef == null)
                     return;
@@ -94,6 +118,9 @@ namespace JSIL {
                     before2 = queue.EnqueueBefore(before, identifier, typedef);
                 else
                     before2 = queue.Enqueue(identifier, typedef);
+
+                if (typedef.DeclaringType != null)
+                    EnqueueType(queue, typedef.DeclaringType, before2);
 
                 if (typedef.BaseType != null)
                     EnqueueType(queue, typedef.BaseType, before2);
@@ -107,10 +134,14 @@ namespace JSIL {
             if (type == null)
                 throw new ArgumentNullException("type");
 
+            TypeInfo result;
             var identifier = new TypeIdentifier(type);
+            if (TypeInformation.TryGet(identifier, out result))
+                return result;
 
             var fullName = type.FullName;
 
+            var moreTypes = new Dictionary<TypeIdentifier, TypeDefinition>();
             var typesToInitialize = new OrderedDictionary<TypeIdentifier, TypeDefinition>();
             var secondPass = new Dictionary<TypeIdentifier, TypeInfo>();
 
@@ -128,21 +159,18 @@ namespace JSIL {
                 var kvp = typesToInitialize.First;
                 typesToInitialize.Remove(kvp.Key);
 
-                if (TypeInformation.ContainsKey(kvp.Key))
-                    continue;
-                else if (kvp.Value == null) {
-                    TypeInformation[kvp.Key] = null;
-                    continue;
-                }
+                TypeInformation.TryCreate(
+                    kvp.Key, () => {
+                        var constructed = ConstructTypeInformation(kvp.Key, kvp.Value, moreTypes);
+                        secondPass.Add(kvp.Key, constructed);
 
-                var moreTypes = ConstructTypeInformation(kvp.Key, kvp.Value);
+                        foreach (var more in moreTypes)
+                            EnqueueType(typesToInitialize, more.Value);
+                        moreTypes.Clear();
 
-                TypeInfo temp;
-                if (TypeInformation.TryGetValue(kvp.Key, out temp))
-                    secondPass.Add(kvp.Key, temp);
-
-                foreach (var more in moreTypes)
-                    EnqueueType(typesToInitialize, more.Value);
+                        return constructed;
+                    }
+                );
             }
 
             foreach (var ti in secondPass.Values) {
@@ -150,24 +178,30 @@ namespace JSIL {
                 ti.ConstructMethodGroups();
             }
 
-            TypeInfo result;
-            if (!TypeInformation.TryGetValue(identifier, out result))
+            if (!TypeInformation.TryGet(identifier, out result))
                 return null;
             else
                 return result;
         }
 
-        protected Dictionary<TypeIdentifier, TypeDefinition> ConstructTypeInformation (TypeIdentifier identifier, TypeDefinition type) {
+        protected TypeInfo ConstructTypeInformation (TypeIdentifier identifier, TypeDefinition type, Dictionary<TypeIdentifier, TypeDefinition> moreTypes) {
             var moduleInfo = GetModuleInformation(type.Module);
 
-            TypeInfo baseType = null;
-            if (type.BaseType != null)
-                baseType = GetTypeInformation(type.BaseType);
+            TypeInfo baseType = null, declaringType = null;
+            if (type.BaseType != null) {
+                baseType = GetExisting(type.BaseType);
+                if (baseType == null)
+                    throw new InvalidOperationException("Missing type info for base type");
+            }
 
-            var result = new TypeInfo(this, moduleInfo, type, baseType, identifier);
-            TypeInformation[identifier] = result;
+            if (type.DeclaringType != null) {
+                declaringType = GetExisting(type.DeclaringType);
+                if (declaringType == null)
+                    throw new InvalidOperationException("Missing type info for declaring type");
+            }
 
-            var typesToInitialize = new Dictionary<TypeIdentifier, TypeDefinition>();
+            var result = new TypeInfo(this, moduleInfo, type, declaringType, baseType, identifier);
+
             Action<TypeReference> addType = (tr) => {
                 if (tr == null)
                     return;
@@ -175,9 +209,7 @@ namespace JSIL {
                 var _identifier = new TypeIdentifier(tr);
                 if (_identifier.Equals(identifier))
                     return;
-                else if (TypeInformation.ContainsKey(_identifier))
-                    return;
-                else if (typesToInitialize.ContainsKey(_identifier))
+                else if (moreTypes.ContainsKey(_identifier))
                     return;
 
                 var td = ILBlockTranslator.GetTypeDefinition(tr);
@@ -185,10 +217,8 @@ namespace JSIL {
                     return;
 
                 _identifier = new TypeIdentifier(td);
-                if (typesToInitialize.ContainsKey(_identifier))
-                    return;
 
-                typesToInitialize.Add(_identifier, td);
+                moreTypes[_identifier] = td;
             };
 
             foreach (var member in result.Members.Values) {
@@ -201,18 +231,39 @@ namespace JSIL {
                 }
             }
 
-            return typesToInitialize;
+            return result;
         }
 
-        ProxyInfo[] ITypeInfoSource.GetProxies (TypeReference type) {
-            var result = new List<ProxyInfo>();
+        ProxyInfo[] ITypeInfoSource.GetProxies (TypeDefinition type) {
+            var result = new HashSet<ProxyInfo>();
+            bool isInherited = false;
 
-            foreach (var p in TypeProxies.Values) {
-                if (p.IsMatch(type, null))
-                    result.Add(p);
+            while (type != null) {
+                HashSet<ProxyInfo> candidates;
+                bool found;
+
+                lock (Assemblies)
+                    found = DirectProxiesByTypeName.TryGetValue(type.FullName, out candidates);
+
+                if (found) {
+                    foreach (var candidate in candidates) {
+                        if (isInherited && !candidate.IsInheritable)
+                            continue;
+
+                        if (candidate.IsMatch(type, null))
+                            result.Add(candidate);
+                    }
+                }
+
+                if (type.BaseType != null)
+                    type = type.BaseType.Resolve();
+                else
+                    break;
+
+                isInherited = true;
             }
 
-            return result.Distinct().ToArray();
+            return result.ToArray();
         }
 
         IMemberInfo ITypeInfoSource.Get (MemberReference member) {
@@ -241,14 +292,14 @@ namespace JSIL {
             return GetTypeInformation(type);
         }
 
-        TypeInfo ITypeInfoSource.GetExisting (TypeReference type) {
+        public TypeInfo GetExisting (TypeReference type) {
             if (type == null)
                 throw new ArgumentNullException("type");
 
             var identifier = new TypeIdentifier(type);
 
             TypeInfo result;
-            if (!TypeInformation.TryGetValue(identifier, out result))
+            if (!TypeInformation.TryGet(identifier, out result))
                 return null;
 
             return result;

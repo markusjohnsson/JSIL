@@ -86,6 +86,7 @@ namespace JSIL.Tests {
                     @"TestCases\ReturnStruct.cs",
                     @"TestCases\StructArrayLiteral.cs",
                     @"TestCases\StructAssignment.cs",
+                    @"TestCases\StructCompoundAssignment.cs",
                     @"TestCases\StructDefaults.cs",
                     @"TestCases\StructEquals.cs",
                     @"TestCases\StructFields.cs",
@@ -94,7 +95,8 @@ namespace JSIL.Tests {
                     @"TestCases\StructPropertyThis.cs",
                     @"TestCases\StructThisAssignment.cs",
                     @"TestCases\SingleDimStructArrays.cs",
-                    @"TestCases\MultiDimStructArrays.cs"
+                    @"TestCases\MultiDimStructArrays.cs",
+                    @"TestCases\StructLateDeclaration.cs" // This test demonstrates a bug in IntroduceVariableDeclarations
                 }, null, defaultProvider
             );
         }

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
 
@@ -29,107 +32,145 @@ namespace JSIL.Internal {
             "const", "true", "false", "null"
         };
 
-        public static Regex ValidIdentifier = new Regex("$[A-Za-z_$]([A-Za-z_$0-9]*)^", RegexOptions.Compiled);
+        public static Regex ValidIdentifier = new Regex(
+            "$[A-Za-z_$]([A-Za-z_$0-9]*)^", 
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture
+        );
+
+        public static string GetPathOfAssembly (Assembly assembly) {
+            var uri = new Uri(assembly.CodeBase);
+            var result = Uri.UnescapeDataString(uri.AbsolutePath);
+            if (String.IsNullOrWhiteSpace(result))
+                result = assembly.Location;
+
+            return result;
+        }
 
         public static string EscapeIdentifier (string identifier, EscapingMode escapingMode = EscapingMode.MemberIdentifier) {
+            bool isEscaped = false;
             string result = identifier;
 
-            if (!ValidIdentifier.IsMatch(identifier)) {
-                var sb = new StringBuilder();
-                for (int i = 0, l = identifier.Length; i < l; i++) {
-                    var ch = identifier[i];
+            var sb = new StringBuilder();
+            for (int i = 0, l = identifier.Length; i < l; i++) {
+                var ch = identifier[i];
 
-                    switch (ch) {
-                        case '.':
-                            if (escapingMode != EscapingMode.MemberIdentifier)
-                                sb.Append(".");
-                            else
-                                sb.Append("_");
-                        break;
-                        case '/':
-                            if (escapingMode == EscapingMode.MemberIdentifier)
-                                sb.Append("_");
-                            else if (escapingMode == EscapingMode.TypeIdentifier)
-                                sb.Append(".");
-                            else
-                                sb.Append("/");
-                        break;
-                        case '+':
-                            if (escapingMode == EscapingMode.MemberIdentifier)
-                                sb.Append("_");
-                            else if (escapingMode == EscapingMode.TypeIdentifier)
-                                sb.Append(".");
-                            else
-                                sb.Append("+");
-                        break;
-                        case '`':
-                            sb.Append("$b");
-                        break;
-                        case '~':
-                            sb.Append("$t");
-                        break;
-                        case ':':
-                            sb.Append("$c");
-                        break;
-                        case '<':
-                            sb.Append("$l");
-                        break;
-                        case '>':
-                            sb.Append("$g");
-                        break;
-                        case '(':
-                            sb.Append("$lp");
-                        break;
-                        case ')':
-                            sb.Append("$rp");
-                        break;
-                        case '{':
-                            sb.Append("$lc");
-                        break;
-                        case '}':
-                            sb.Append("$rc");
-                        break;
-                        case '[':
-                            sb.Append("$lb");
-                        break;
-                        case ']':
-                            sb.Append("$rb");
-                        break;
-                        case '@':
-                            sb.Append("$at");
-                        break;
-                        case '-':
-                            sb.Append("$da");
-                        break;
-                        case '=':
-                            sb.Append("$eq");
-                        break;
-                        case ' ':
-                            sb.Append("$sp");
-                        break;
-                        case '?':
-                            sb.Append("$qu");
-                        break;
-                        case '!':
-                            sb.Append("$ex");
-                        break;
-                        case '*':
-                            sb.Append("$as");
-                        break;
-                        case '&':
-                            sb.Append("$am");
-                        break;
-                        default:
-                            if ((ch <= 32) || (ch >= 127))
-                                sb.AppendFormat("${0:x}", ch);
-                            else
-                                sb.Append(ch);
-                        break;
-                    }
+                switch (ch) {
+                    case '.':
+                        if (escapingMode != EscapingMode.MemberIdentifier)
+                            sb.Append(".");
+                        else {
+                            sb.Append("_");
+                            isEscaped = true;
+                        }
+                    break;
+                    case '/':
+                        if (escapingMode == EscapingMode.MemberIdentifier) {
+                            sb.Append("_");
+                            isEscaped = true;
+                        } else if (escapingMode == EscapingMode.TypeIdentifier) {
+                            sb.Append("_");
+                            isEscaped = true;
+                        } else
+                            sb.Append("/");
+                    break;
+                    case '+':
+                        if (escapingMode == EscapingMode.MemberIdentifier) {
+                            sb.Append("_");
+                            isEscaped = true;
+                        } else if (escapingMode == EscapingMode.TypeIdentifier) {
+                            sb.Append("_");
+                            isEscaped = true;
+                        } else
+                            sb.Append("+");
+                    break;
+                    case '`':
+                        sb.Append("$b");
+                        isEscaped = true;
+                    break;
+                    case '~':
+                        sb.Append("$t");
+                        isEscaped = true;
+                    break;
+                    case ':':
+                        sb.Append("$c");
+                        isEscaped = true;
+                    break;
+                    case '<':
+                        sb.Append("$l");
+                        isEscaped = true;
+                    break;
+                    case '>':
+                        sb.Append("$g");
+                        isEscaped = true;
+                    break;
+                    case '(':
+                        sb.Append("$lp");
+                        isEscaped = true;
+                    break;
+                    case ')':
+                        sb.Append("$rp");
+                        isEscaped = true;
+                    break;
+                    case '{':
+                        sb.Append("$lc");
+                        isEscaped = true;
+                    break;
+                    case '}':
+                        sb.Append("$rc");
+                        isEscaped = true;
+                    break;
+                    case '[':
+                        sb.Append("$lb");
+                        isEscaped = true;
+                    break;
+                    case ']':
+                        sb.Append("$rb");
+                        isEscaped = true;
+                    break;
+                    case '@':
+                        sb.Append("$at");
+                        isEscaped = true;
+                    break;
+                    case '-':
+                        sb.Append("$da");
+                        isEscaped = true;
+                    break;
+                    case '=':
+                        sb.Append("$eq");
+                        isEscaped = true;
+                    break;
+                    case ' ':
+                        sb.Append("$sp");
+                        isEscaped = true;
+                    break;
+                    case '?':
+                        sb.Append("$qu");
+                        isEscaped = true;
+                    break;
+                    case '!':
+                        sb.Append("$ex");
+                        isEscaped = true;
+                    break;
+                    case '*':
+                        sb.Append("$as");
+                        isEscaped = true;
+                    break;
+                    case '&':
+                        sb.Append("$am");
+                        isEscaped = true;
+                    break;
+                    default:
+                        if ((ch <= 32) || (ch >= 127)) {
+                            sb.AppendFormat("${0:x}", ch);
+                            isEscaped = true;
+                        } else
+                            sb.Append(ch);
+                    break;
                 }
-
-                result = sb.ToString();
             }
+
+            if (isEscaped)
+                result = sb.ToString();
 
             bool isReservedWord = ReservedWords.Contains(result);
             if (isReservedWord)
@@ -167,10 +208,10 @@ namespace JSIL.Internal {
             if (text == null)
                 return "null";
 
-            bool containsSingle = text.Contains('\'');
-            bool containsDouble = text.Contains('"');
-
             if (quoteCharacter == null) {
+                bool containsSingle = text.Contains("\'");
+                bool containsDouble = text.Contains("\"");
+
                 if (containsDouble && !containsSingle)
                     quoteCharacter = '\'';
                 else
@@ -280,6 +321,160 @@ namespace JSIL.Internal {
                 (from l in text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
                  select "    " + l).ToArray()
             );
+        }
+    }
+
+    public class ConcurrentHashQueue<TValue> {
+        protected readonly ConcurrentDictionary<TValue, bool> Dictionary;
+        protected readonly ConcurrentQueue<TValue> Queue;
+
+        public ConcurrentHashQueue () {
+            Queue = new ConcurrentQueue<TValue>();
+            Dictionary = new ConcurrentDictionary<TValue, bool>();
+        }
+
+        public ConcurrentHashQueue (int concurrencyLevel, int capacity) {
+            Queue = new ConcurrentQueue<TValue>();
+            Dictionary = new ConcurrentDictionary<TValue, bool>(concurrencyLevel, capacity);
+        }
+
+        public bool TryEnqueue (TValue value) {
+            if (Dictionary.TryAdd(value, false)) {
+                Queue.Enqueue(value);
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryDequeue (out TValue value) {
+            bool temp;
+
+            if (Queue.TryDequeue(out value)) {
+                Dictionary.TryRemove(value, out temp);
+                return true;
+            }
+
+            return false;
+        }
+
+        public int Count {
+            get {
+                return Math.Min(Dictionary.Count, Queue.Count);
+            }
+        }
+    }
+
+    public class ConcurrentCache<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> {
+        protected class ConstructionState {
+            public readonly ManualResetEventSlim Signal = new ManualResetEventSlim(false);
+            public readonly Thread ConstructingThread = Thread.CurrentThread;
+
+            public void Wait () {
+                if (ConstructingThread == Thread.CurrentThread)
+                    throw new InvalidOperationException("Recursive construction of cache entry");
+
+                Signal.Wait();
+            }
+        }
+
+        protected readonly ConcurrentDictionary<TKey, TValue> Storage;
+        protected readonly ConcurrentDictionary<TKey, ConstructionState> States;
+
+        public ConcurrentCache () {
+            Storage = new ConcurrentDictionary<TKey, TValue>();
+            States = new ConcurrentDictionary<TKey, ConstructionState>();
+        }
+
+        public ConcurrentCache (int concurrencyLevel, int capacity) {
+            Storage = new ConcurrentDictionary<TKey, TValue>(concurrencyLevel, capacity);
+            States = new ConcurrentDictionary<TKey, ConstructionState>(concurrencyLevel, concurrencyLevel);
+        }
+
+        public ConcurrentCache (int concurrencyLevel, int capacity, IEqualityComparer<TKey> comparer) {
+            Storage = new ConcurrentDictionary<TKey, TValue>(concurrencyLevel, capacity, comparer);
+            States = new ConcurrentDictionary<TKey, ConstructionState>(concurrencyLevel, concurrencyLevel, comparer);
+        }
+
+        public void Clear () {
+            States.Clear();
+            Storage.Clear();
+        }
+
+        public bool MightContainKey (TKey key) {
+            return Storage.ContainsKey(key) || States.ContainsKey(key);
+        }
+
+        public bool ContainsKey (TKey key) {
+            return Storage.ContainsKey(key);
+        }
+
+        public bool TryGet (TKey key, out TValue result) {
+            ConstructionState state;
+
+            while (States.TryGetValue(key, out state))
+                state.Wait();
+
+            return Storage.TryGetValue(key, out result);
+        }
+
+        public bool TryCreate (TKey key, Func<TValue> creator) {
+            ConstructionState state;
+
+            if (Storage.ContainsKey(key))
+                return false;
+
+            if (States.TryAdd(key, state = new ConstructionState())) {
+                try {
+                    if (Storage.ContainsKey(key))
+                        return false;
+
+                    var result = creator();
+
+                    if (!Storage.TryAdd(key, result))
+                        throw new InvalidOperationException("Cache entry was created by someone else while construction lock was held");
+
+                    return true;
+                } finally {
+                    States.TryRemove(key, out state);
+                    state.Signal.Set();
+                }
+            }
+
+            return false;
+        }
+
+        public TValue GetOrCreate (TKey key, Func<TValue> creator) {
+            while (true) {
+                ConstructionState state;
+
+                while (States.TryGetValue(key, out state))
+                    state.Wait();
+
+                TValue result;
+                if (Storage.TryGetValue(key, out result))
+                    return result;
+
+                TryCreate(key, creator);
+            }
+        }
+
+        public bool TryRemove (TKey key) {
+            ConstructionState state;
+
+            while (States.TryGetValue(key, out state))
+                state.Wait();
+
+            TValue temp;
+            return Storage.TryRemove(key, out temp);
+        }
+
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator () {
+            return Storage.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator () {
+            return Storage.GetEnumerator();
         }
     }
 }

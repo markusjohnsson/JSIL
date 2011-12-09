@@ -12,6 +12,7 @@ using JSIL.Ast;
 using JSIL.Internal;
 using Mono.Cecil;
 using System.Globalization;
+using JSIL;
 
 namespace JSIL.Internal {
     public enum ListValueType {
@@ -26,22 +27,29 @@ namespace JSIL.Internal {
         public readonly TextWriter Output;
         public readonly PlainTextOutput PlainTextOutput;
         public readonly TextOutputFormatter PlainTextFormatter;
+        public readonly AssemblyManifest Manifest;
         public readonly ITypeInfoSource TypeInfo;
         public readonly AssemblyDefinition Assembly;
         public readonly string PrivateToken;
 
         public MethodReference CurrentMethod = null;
 
-        protected static int NextAssemblyId = 1;
         protected readonly HashSet<string> DeclaredNamespaces = new HashSet<string>();
 
-        public JavascriptFormatter (TextWriter output, ITypeInfoSource typeInfo, AssemblyDefinition assembly) {
+        public JavascriptFormatter (TextWriter output, ITypeInfoSource typeInfo, AssemblyManifest manifest, AssemblyDefinition assembly) {
             Output = output;
             PlainTextOutput = new PlainTextOutput(Output);
             PlainTextFormatter = new TextOutputFormatter(PlainTextOutput);
             TypeInfo = typeInfo;
+            Manifest = manifest;
             Assembly = assembly;
-            PrivateToken = String.Format("$asm{0:X2}", NextAssemblyId++);
+            PrivateToken = Manifest.GetPrivateToken(assembly);
+        }
+
+        public void AssemblyReference (TypeReference type) {
+            string key = GetContainingAssemblyName(type);
+
+            Identifier(Manifest.GetPrivateToken(key), null);
         }
 
         public void LPar () {
@@ -203,44 +211,79 @@ namespace JSIL.Internal {
             OpenBrace();
         }
 
-        public static string GetParent (TypeReference type, string defaultParent = "JSIL.GlobalNamespace") {
-            var fullname = type.FullName;
-            var index = fullname.LastIndexOfAny(new char[] { '.', '+', '/' });
-            if (index < 0)
-                return defaultParent;
-            else
-                return fullname.Substring(0, index);
+        public static string GetContainingAssemblyName (TypeReference tr) {
+            var scope = tr.Scope;
+            switch (scope.MetadataScopeType) {
+                case MetadataScopeType.AssemblyNameReference:
+                    return ((AssemblyNameReference)scope).FullName;
+                case MetadataScopeType.ModuleReference:
+                    throw new NotImplementedException();
+                case MetadataScopeType.ModuleDefinition:
+                    return ((ModuleDefinition)scope).Assembly.FullName;
+            }
+
+            return tr.Module.Assembly.FullName;
         }
 
         public void TypeReference (TypeReference type) {
-            var typeDef = ILBlockTranslator.GetTypeDefinition(type);
-            var identifier = Util.EscapeIdentifier((typeDef ?? type).FullName, EscapingMode.String);
-            var git = type as GenericInstanceType;
+            if (type.FullName == "JSIL.Proxy.AnyType") {
+                Value("JSIL.AnyType");
+                return;
+            } else if (type.FullName == "JSIL.Proxy.AnyType[]") {
+                Value("System.Array");
+                Space();
+                Comment("AnyType[]");
+                return;
+            }
 
-            if (type is GenericParameter) {
+            var isReference = type is ByReferenceType;
+            var originalType = type;
+            type = ILBlockTranslator.DereferenceType(type);
+            var typeDef = ILBlockTranslator.GetTypeDefinition(type, false);
+            var typeInfo = TypeInfo.Get(type);
+            var identifier = Util.EscapeIdentifier(
+                (typeInfo != null) ? typeInfo.FullName 
+                    : (typeDef != null) ? typeDef.FullName 
+                        : type.FullName
+                , EscapingMode.String
+            );
+            var git = type as GenericInstanceType;
+            var at = type as ArrayType;
+
+            if (isReference) {
+                Value("JSIL.Reference");
+                Space();
+                Comment("{0}", originalType);
+            } else if (type is GenericParameter) {
                 Keyword("new");
                 Space();
                 Identifier("JSIL.GenericParameter", null);
                 LPar();
                 Value(identifier);
                 RPar();
-            } else if (git != null) {
+            } else if ((git != null) || (GetContainingAssemblyName(type) != Assembly.FullName)) {
                 Keyword("new");
                 Space();
                 Identifier("JSIL.TypeRef", null);
                 LPar();
 
-                Identifier(PrivateToken, null);
+                AssemblyReference(type);
                 Comma();
 
                 Value(identifier);
-                Comma();
 
-                OpenBracket();
-                CommaSeparatedList(git.GenericArguments, ListValueType.TypeReference);
-                CloseBracket();
+                if (git != null) {
+                    Comma();
+                    OpenBracket();
+                    CommaSeparatedList(git.GenericArguments, ListValueType.TypeReference);
+                    CloseBracket();
+                }
 
                 RPar();
+            } else if (at != null) {
+                Value("System.Array");
+                Space();
+                Comment("{0}", originalType);
             } else {
                 Value(identifier);
             }
@@ -323,14 +366,25 @@ namespace JSIL.Internal {
                     Identifier(type.FullName);
                 }
             } else {
+                var info = TypeInfo.Get(type);
+                if (info.Replacement != null) {
+                    PlainTextOutput.Write(info.Replacement);
+                    return;
+                }
+
                 var typedef = type.Resolve();
-                if ((typedef != null) && (typedef.Module.Assembly == Assembly) && !typedef.IsPublic) {
-                    PlainTextOutput.Write(PrivateToken);
-                    PlainTextOutput.Write(".");
+                if (typedef != null) {
+                    if (GetContainingAssemblyName(typedef) == Assembly.FullName) {
+                        PlainTextOutput.Write(PrivateToken);
+                        PlainTextOutput.Write(".");
+                    } else {
+                        AssemblyReference(typedef);
+                        PlainTextOutput.Write(".");
+                    }
                 }
 
                 PlainTextOutput.Write(Util.EscapeIdentifier(
-                    type.FullName, EscapingMode.TypeIdentifier
+                    info.FullName, EscapingMode.TypeIdentifier
                 ));
             }
         }
@@ -473,15 +527,16 @@ namespace JSIL.Internal {
             Value(GetNameOfType(type as dynamic));
         }
 
-        protected static string GetNameOfType (TypeReference type) {
-            return type.FullName;
+        protected string GetNameOfType (TypeReference type) {
+            var info = TypeInfo.Get(type);
+            return info.FullName;
         }
 
-        protected static string GetNameOfType (ArrayType type) {
+        protected string GetNameOfType (ArrayType type) {
             return GetNameOfType(type.ElementType as dynamic) + "[]";
         }
 
-        protected static string GetNameOfType (GenericInstanceType type) {
+        protected string GetNameOfType (GenericInstanceType type) {
             return String.Format("{0}[{1}]",
                 GetNameOfType(type.ElementType as dynamic),
                 String.Join(", ", (from ga in type.GenericArguments

@@ -57,8 +57,9 @@ namespace JSIL.Meta {
     /// To refer to a parameter within the replacement expression, prefix the parameter name with a dollar sign - the this-reference becomes $this, for example.
     /// </summary>
     [AttributeUsage(
-        AttributeTargets.Method | AttributeTargets.Field |
-        AttributeTargets.Property | AttributeTargets.Constructor
+        AttributeTargets.Method | AttributeTargets.Constructor |
+        AttributeTargets.Property | AttributeTargets.Class | 
+        AttributeTargets.Struct
     )]
     public class JSReplacement : Attribute {
         public JSReplacement (string expression) {
@@ -66,11 +67,12 @@ namespace JSIL.Meta {
     }
 
     /// <summary>
-    /// Specifies that the name of this member should be changed when translating code to javascript.
+    /// Specifies that the name of this member or type should be changed when translating code to javascript.
     /// </summary>
     [AttributeUsage(
         AttributeTargets.Method | AttributeTargets.Field |
-        AttributeTargets.Property
+        AttributeTargets.Property | AttributeTargets.Class | 
+        AttributeTargets.Struct | AttributeTargets.Enum
     )]
     public class JSChangeName : Attribute {
         public JSChangeName (string newName) {
@@ -88,12 +90,19 @@ namespace JSIL.Meta {
     }
 
     /// <summary>
-    /// Specifies that this method is implemented externally and should not be generated when translating code to JavaScript
-    ///  (but does not prevent use of the method like <see cref="JSIgnore"/> does.)
+    /// Specifies that this member or type is implemented externally and should not be generated when translating code to JavaScript
+    ///  (but does not prevent use of the member/type like <see cref="JSIgnore"/> does.)
+    /// Note that while external methods will generate a clear warning at runtime if used without being defined, the same is not true
+    ///  for fields or classes - fields will simply be undefined, and classes may produce a JavaScript TypeError or ReferenceError.
+    /// The behavior of external properties depends on where you apply the attribute: Marking the property itself as external means
+    ///  that the property definition will be omitted and the getter and setter will not be translated.
+    /// Marking a property's getter or setter as external behaves the same as marking a method as external - the property definition
+    ///  will still be translated, so once the externals are implemented the property will work as expected.
     /// </summary>
     [AttributeUsage(
         AttributeTargets.Method | AttributeTargets.Constructor |
-        AttributeTargets.Property                
+        AttributeTargets.Property | AttributeTargets.Class |
+        AttributeTargets.Field
     )]
     public class JSExternal : Attribute {
     }

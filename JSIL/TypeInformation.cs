@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace JSIL.Internal {
         TypeInfo GetExisting (TypeReference type);
         IMemberInfo Get (MemberReference member);
 
-        ProxyInfo[] GetProxies (TypeReference type);
+        ProxyInfo[] GetProxies (TypeDefinition type);
     }
 
     public static class TypeInfoSourceExtensions {
@@ -52,14 +53,19 @@ namespace JSIL.Internal {
         public TypeIdentifier (TypeReference type) {
             Assembly = null;
             Namespace = type.Namespace;
-            if (type.DeclaringType != null)
-                DeclaringTypeName = type.DeclaringType.FullName;
+            Name = type.Name;
+
+            var declaringType = type.DeclaringType;
+            if (declaringType != null)
+                DeclaringTypeName = declaringType.FullName;
             else
                 DeclaringTypeName = null;
-            Name = type.Name;
         }
 
         public bool Equals (TypeIdentifier rhs) {
+            if (this == rhs)
+                return true;
+
             if (!String.Equals(Name, rhs.Name))
                 return false;
 
@@ -135,42 +141,44 @@ namespace JSIL.Internal {
     }
 
     public class MemberIdentifier {
-        public enum MemberType {
-            Field,
-            Property,
-            Event,
-            Method,
+        public enum MemberType : byte {
+            Field = 0,
+            Method = 1,
+            Property = 2,
+            Event = 3,
         }
 
-        public static readonly Dictionary<string, string[]> Proxies = new Dictionary<string, string[]>();
+        public static readonly ConcurrentCache<string, string[]> Proxies = new ConcurrentCache<string, string[]>();
 
         public readonly MemberType Type;
         public readonly string Name;
         public readonly TypeReference ReturnType;
         public readonly int ParameterCount;
-        public readonly IEnumerable<TypeReference> ParameterTypes;
+        public readonly TypeReference[] ParameterTypes;
         public readonly int GenericArgumentCount;
 
-        public static readonly IEnumerable<TypeReference> AnyParameterTypes = new TypeReference[0] {};
+        protected readonly int HashCode;
+
+        public static readonly TypeReference[] AnyParameterTypes = new TypeReference[] {};
 
         public static void ResetProxies () {
             Proxies.Clear();
         }
 
         public static MemberIdentifier New (MemberReference mr) {
-            var method = mr as MethodReference;
-            var property = mr as PropertyReference;
-            var evt = mr as EventReference;
-            var field = mr as FieldReference;
+            MethodReference method;
+            PropertyReference property;
+            EventReference evt;
+            FieldReference field;
 
-            if (method != null)
+            if ((method = mr as MethodReference) != null)
                 return new MemberIdentifier(method);
-            else if (property != null)
-                return new MemberIdentifier(property);
-            else if (evt != null)
-                return new MemberIdentifier(evt);
-            else if (field != null)
+            else if ((field = mr as FieldReference) != null)
                 return new MemberIdentifier(field);
+            else if ((property = mr as PropertyReference) != null)
+                return new MemberIdentifier(property);
+            else if ((evt = mr as EventReference) != null)
+                return new MemberIdentifier(evt);
             else
                 throw new NotImplementedException();
         }
@@ -190,6 +198,8 @@ namespace JSIL.Internal {
                 GenericArgumentCount = 0;
 
             LocateProxy(mr);
+
+            HashCode = Type.GetHashCode() ^ Name.GetHashCode();
         }
 
         public MemberIdentifier (PropertyReference pr) {
@@ -205,12 +215,14 @@ namespace JSIL.Internal {
             if (pd != null) {
                 if (pd.GetMethod != null) {
                     ParameterCount = pd.GetMethod.Parameters.Count;
-                    ParameterTypes = (from p in pd.GetMethod.Parameters select p.ParameterType);
+                    ParameterTypes = (from p in pd.GetMethod.Parameters select p.ParameterType).ToArray();
                 } else if (pd.SetMethod != null) {
                     ParameterCount = pd.SetMethod.Parameters.Count - 1;
-                    ParameterTypes = (from p in pd.SetMethod.Parameters select p.ParameterType).Take(ParameterCount);
+                    ParameterTypes = (from p in pd.SetMethod.Parameters select p.ParameterType).Take(ParameterCount).ToArray();
                 }
             }
+
+            HashCode = Type.GetHashCode() ^ Name.GetHashCode();
         }
 
         public MemberIdentifier (FieldReference fr) {
@@ -221,6 +233,8 @@ namespace JSIL.Internal {
             GenericArgumentCount = 0;
             ParameterTypes = null;
             LocateProxy(fr);
+
+            HashCode = Type.GetHashCode() ^ Name.GetHashCode();
         }
 
         public MemberIdentifier (EventReference er) {
@@ -231,87 +245,101 @@ namespace JSIL.Internal {
             GenericArgumentCount = 0;
             ParameterTypes = null;
             LocateProxy(er);
+
+            HashCode = Type.GetHashCode() ^ Name.GetHashCode();
         }
 
         protected static void LocateProxy (MemberReference mr) {
             var fullName = mr.DeclaringType.FullName;
-            string[] knownProxies;
-            if (Proxies.TryGetValue(fullName, out knownProxies))
-                return;
 
-            var icap = mr.DeclaringType as ICustomAttributeProvider;
-            if (icap == null)
-                return;
+            Proxies.TryCreate(fullName, () => {
+                var icap = mr.DeclaringType as ICustomAttributeProvider;
+                if (icap == null)
+                    return null;
 
-            var proxyAttribute = icap.CustomAttributes.Where(
-                (ca) => (ca.AttributeType.Name == "JSProxy") &&
-                    (ca.AttributeType.Namespace == "JSIL.Proxy")
-            ).FirstOrDefault();
-
-            if (proxyAttribute == null)
-                return;
-
-            string[] proxyTargets = null;
-            var args = proxyAttribute.ConstructorArguments;
-
-            foreach (var arg in args) {
-                switch (arg.Type.FullName) {
-                    case "System.Type":
-                        proxyTargets = new string[] { ((TypeReference)arg.Value).FullName };
-
-                        break;
-                    case "System.Type[]": {
-                        var values = (CustomAttributeArgument[])arg.Value;
-                        proxyTargets = new string[values.Length];
-                        for (var i = 0; i < proxyTargets.Length; i++)
-                            proxyTargets[i] = ((TypeReference)values[i].Value).FullName;
-
+                CustomAttribute proxyAttribute = null;
+                for (int i = 0, c = icap.CustomAttributes.Count; i < c; i++) {
+                    var ca = icap.CustomAttributes[i];
+                    if ((ca.AttributeType.Name == "JSProxy") && (ca.AttributeType.Namespace == "JSIL.Proxy")) {
+                        proxyAttribute = ca;
                         break;
                     }
-                    case "System.String": {
-                        proxyTargets = new string[] { (string)arg.Value };
+                }
 
-                        break;
+                if (proxyAttribute == null)
+                    return null;
+
+                string[] proxyTargets = null;
+                var args = proxyAttribute.ConstructorArguments;
+
+                foreach (var arg in args) {
+                    switch (arg.Type.FullName) {
+                        case "System.Type":
+                            proxyTargets = new string[] { ((TypeReference)arg.Value).FullName };
+
+                            break;
+                        case "System.Type[]": {
+                            var values = (CustomAttributeArgument[])arg.Value;
+                            proxyTargets = new string[values.Length];
+                            for (var i = 0; i < proxyTargets.Length; i++)
+                                proxyTargets[i] = ((TypeReference)values[i].Value).FullName;
+
+                            break;
+                        }
+                        case "System.String": {
+                            proxyTargets = new string[] { (string)arg.Value };
+
+                            break;
+                        }
+                        case "System.String[]": {
+                            var values = (CustomAttributeArgument[])arg.Value;
+                            proxyTargets = (from v in values select (string)v.Value).ToArray();
+
+                            break;
+                        }
                     }
-                    case "System.String[]": {
-                        var values = (CustomAttributeArgument[])arg.Value;
-                        proxyTargets = (from v in values select (string)v.Value).ToArray();
+                }
 
-                        break;
+                return proxyTargets;
+            });
+        }
+
+        static TypeReference[] GetParameterTypes (IList<ParameterDefinition> parameters) {
+            if (parameters.Count == 1) {
+                var p = parameters[0];
+                for (int c = p.CustomAttributes.Count, i = 0; i < c; i++) {
+                    var ca = p.CustomAttributes[i];
+                    if ((ca.AttributeType.Name == "ParamArrayAttribute") && (ca.AttributeType.Namespace == "System")) {
+                        var t = JSExpression.DeReferenceType(parameters[0].ParameterType);
+                        var at = t as ArrayType;
+                        if ((at != null) && IsAnyType(at.ElementType))
+                            return AnyParameterTypes;
                     }
                 }
             }
 
-            Proxies[fullName] = proxyTargets;
-        }
-
-        static IEnumerable<TypeReference> GetParameterTypes (IList<ParameterDefinition> parameters) {
-            if (
-                (parameters.Count == 1) && 
-                (from ca in parameters[0].CustomAttributes 
-                 where ca.AttributeType.FullName == "System.ParamArrayAttribute" 
-                 select ca).Count() == 1
-            ) {
-                var t = JSExpression.DeReferenceType(parameters[0].ParameterType);
-                var at = t as ArrayType;
-                if ((at != null) && IsAnyType(at.ElementType))
-                    return AnyParameterTypes;
+            {
+                int c = parameters.Count;
+                var result = new TypeReference[c];
+                for (int i = 0; i < c; i++) {
+                    result[i] = parameters[i].ParameterType;
+                }
+                return result;
             }
-
-            return (from p in parameters select p.ParameterType);
         }
 
         static bool IsAnyType (TypeReference t) {
             if (t == null)
                 return false;
 
-            return (t.Name == "AnyType" && t.Namespace == "JSIL.Proxy") ||
-                (JSExpression.DeReferenceType(t).IsGenericParameter);
+            return (t.Name == "AnyType" && t.Namespace == "JSIL.Proxy") || (t.IsGenericParameter);
         }
 
         bool TypesAreEqual (TypeReference lhs, TypeReference rhs) {
-            if (lhs == null || rhs == null)
-                return (lhs == rhs);
+            if (lhs == rhs)
+                return true;
+            else if (lhs == null || rhs == null)
+                return false;
 
             var lhsReference = lhs as ByReferenceType;
             var rhsReference = rhs as ByReferenceType;
@@ -355,13 +383,13 @@ namespace JSIL.Internal {
 
             string[] proxyTargets;
             if (
-                Proxies.TryGetValue(lhs.FullName, out proxyTargets) &&
+                Proxies.TryGet(lhs.FullName, out proxyTargets) &&
                 (proxyTargets != null) &&
                 proxyTargets.Contains(rhs.FullName)
             ) {
                 return true;
             } else if (
-                Proxies.TryGetValue(rhs.FullName, out proxyTargets) &&
+                Proxies.TryGet(rhs.FullName, out proxyTargets) &&
                 (proxyTargets != null) &&
                 proxyTargets.Contains(lhs.FullName)
             ) {
@@ -375,6 +403,9 @@ namespace JSIL.Internal {
         }
 
         public bool Equals (MemberIdentifier rhs) {
+            if (this == rhs)
+                return true;
+
             if (Type != rhs.Type)
                 return false;
 
@@ -395,15 +426,8 @@ namespace JSIL.Internal {
                 if (ParameterCount != rhs.ParameterCount)
                     return false;
 
-                using (var eLeft = ParameterTypes.GetEnumerator())
-                using (var eRight = rhs.ParameterTypes.GetEnumerator()) {
-                    bool left, right;
-                    while ((left = eLeft.MoveNext()) & (right = eRight.MoveNext())) {
-                        if (!TypesAreEqual(eLeft.Current, eRight.Current))
-                            return false;
-                    }
-
-                    if (left != right)
+                for (int i = 0, c = ParameterCount; i < c; i++) {
+                    if (!TypesAreEqual(ParameterTypes[i], rhs.ParameterTypes[i]))
                         return false;
                 }
             }
@@ -420,7 +444,7 @@ namespace JSIL.Internal {
         }
 
         public override int GetHashCode () {
-            return Type.GetHashCode() ^ Name.GetHashCode();
+            return HashCode;
         }
 
         public override string ToString () {
@@ -609,6 +633,7 @@ namespace JSIL.Internal {
         public readonly TypeIdentifier Identifier;
         public readonly TypeDefinition Definition;
         public readonly ITypeInfoSource Source;
+        public readonly TypeInfo DeclaringType;
         public readonly TypeInfo BaseClass;
 
         public readonly TypeInfo[] Interfaces;
@@ -622,18 +647,22 @@ namespace JSIL.Internal {
         public readonly HashSet<MethodGroupInfo> MethodGroups = new HashSet<MethodGroupInfo>();
 
         public readonly bool IsFlagsEnum;
-        public readonly Dictionary<long, EnumMemberInfo> ValueToEnumMember = new Dictionary<long, EnumMemberInfo>();
-        public readonly Dictionary<string, EnumMemberInfo> EnumMembers = new Dictionary<string, EnumMemberInfo>();
-        public readonly Dictionary<MemberIdentifier, IMemberInfo> Members = new Dictionary<MemberIdentifier, IMemberInfo>();
+        public readonly Dictionary<long, EnumMemberInfo> ValueToEnumMember;
+        public readonly Dictionary<string, EnumMemberInfo> EnumMembers;
+        public readonly Dictionary<MemberIdentifier, IMemberInfo> Members;
         public readonly bool IsProxy;
         public readonly bool IsDelegate;
+        public readonly string Replacement;
 
+        protected string _FullName = null;
         protected bool _FullyInitialized = false;
         protected bool _IsIgnored = false;
+        protected bool _IsExternal = false;
         protected bool _MethodGroupsInitialized = false;
 
-        public TypeInfo (ITypeInfoSource source, ModuleInfo module, TypeDefinition type, TypeInfo baseClass, TypeIdentifier identifier) {
+        public TypeInfo (ITypeInfoSource source, ModuleInfo module, TypeDefinition type, TypeInfo declaringType, TypeInfo baseClass, TypeIdentifier identifier) {
             Identifier = identifier;
+            DeclaringType = declaringType;
             BaseClass = baseClass;
             Source = source;
             Definition = type;
@@ -651,8 +680,11 @@ namespace JSIL.Internal {
             );
 
             var interfaces = new HashSet<TypeInfo>(
-                from i in type.Interfaces select source.Get(i)
+                from i in type.Interfaces select source.GetExisting(i)
             );
+
+            if (interfaces.Any((ii) => ii == null))
+                throw new InvalidOperationException("Missing type info for one or more interfaces");
 
             foreach (var proxy in Proxies) {
                 Metadata.Update(proxy.Metadata, proxy.AttributePolicy == JSProxyAttributePolicy.ReplaceAll);
@@ -662,8 +694,10 @@ namespace JSIL.Internal {
                     if (proxy.InterfacePolicy == JSProxyInterfacePolicy.ReplaceAll)
                         interfaces.Clear();
 
-                    foreach (var i in proxy.Interfaces)
-                        interfaces.Add(source.Get(i));
+                    foreach (var i in proxy.Interfaces) {
+                        var ii = source.Get(i);
+                        interfaces.Add(ii);
+                    }
                 }
             }
 
@@ -678,24 +712,21 @@ namespace JSIL.Internal {
                 Metadata.HasAttribute("System.Runtime.CompilerServices.UnsafeValueTypeAttribute") ||
                 Metadata.HasAttribute("System.Runtime.CompilerServices.NativeCppClassAttribute");
 
-            // Microsoft assemblies often contain global, private classes with these names that collide in the generated JS
-            if (
-                (type.DeclaringType == null) &&
-                String.IsNullOrWhiteSpace(type.Namespace) &&
-                (
-                    (type.Name == "ThisAssembly") ||
-                    (type.Name == "FXAssembly") ||
-                    (type.Name == "AssemblyRef")
-                ) &&
-                type.IsSealed &&
-                type.IsAbstract &&
-                !type.IsPublic
-            ) {
-                _IsIgnored = true;
+            _IsExternal = Metadata.HasAttribute("JSIL.Meta.JSExternal");
+
+            if (Metadata.HasAttribute("JSIL.Meta.JSReplacement")) {
+                Replacement = (string)Metadata.GetAttributeParameters("JSIL.Meta.JSReplacement")[0].Value;
+            } else {
+                Replacement = null;
             }
 
             if (baseClass != null)
                 _IsIgnored |= baseClass.IsIgnored;
+
+            {
+                var capacity = type.Fields.Count + type.Properties.Count + type.Events.Count + type.Methods.Count;
+                Members = new Dictionary<MemberIdentifier, IMemberInfo>(capacity);
+            }
 
             foreach (var field in type.Fields)
                 AddMember(field);
@@ -729,6 +760,10 @@ namespace JSIL.Internal {
 
             if (type.IsEnum) {
                 long enumValue = 0;
+
+                var capacity = type.Fields.Count;
+                ValueToEnumMember = new Dictionary<long, EnumMemberInfo>(capacity);
+                EnumMembers = new Dictionary<string, EnumMemberInfo>(capacity);
 
                 foreach (var field in type.Fields) {
                     // Skip 'value__'
@@ -808,6 +843,16 @@ namespace JSIL.Internal {
             }
         }
 
+        public string ChangedName {
+            get {
+                var parms = Metadata.GetAttributeParameters("JSIL.Meta.JSChangeName");
+                if (parms != null)
+                    return (string)parms[0].Value;
+
+                return null;
+            }
+        }
+
         public override string ToString () {
             return Definition.FullName;
         }
@@ -862,6 +907,21 @@ namespace JSIL.Internal {
                 }
 
                 return _IsIgnored;
+            }
+        }
+
+        public bool IsExternal {
+            get {
+                if (_FullyInitialized)
+                    return _IsExternal;
+
+                if (Definition.DeclaringType != null) {
+                    var dt = Source.GetExisting(Definition.DeclaringType);
+                    if ((dt != null) && dt.IsExternal)
+                        return true;
+                }
+
+                return _IsExternal;
             }
         }
 
@@ -955,6 +1015,11 @@ namespace JSIL.Internal {
         }
 
         static readonly Regex MangledNameRegex = new Regex(@"\<([^>]*)\>([^_]*)__(.*)", RegexOptions.Compiled);
+        static readonly Regex IgnoredKeywordRegex = new Regex(
+            @"__BackingField|CS\$\<|__DisplayClass|\<PrivateImplementationDetails\>|" +
+            @"Runtime\.CompilerServices\.CallSite|\<Module\>|__SiteContainer|" +
+            @"__CachedAnonymousMethodDelegate", RegexOptions.Compiled
+        );
 
         public static string GetOriginalName (string memberName) {
             var m = MangledNameRegex.Match(memberName);
@@ -967,43 +1032,75 @@ namespace JSIL.Internal {
             if (String.IsNullOrWhiteSpace(originalName))
                 return null;
 
-            if (memberName.Contains("__BackingField"))
+            if (memberName.EndsWith("__BackingField", StringComparison.Ordinal))
                 return String.Format("{0}$value", originalName);
             else
                 return originalName;
         }
 
+        public string Name {
+            get {
+                return ChangedName ?? Definition.Name;
+            }
+        }
+
+        public string FullName {
+            get {
+                if (_FullName != null)
+                    return _FullName;
+
+                if (DeclaringType != null)
+                    return _FullName = DeclaringType.FullName + "/" + Name;
+
+                if (string.IsNullOrEmpty(Definition.Namespace))
+                    return _FullName = Name;
+
+                return _FullName = Definition.Namespace + "." + Name;
+            }
+        }
+
         public static bool IsIgnoredName (string shortName, bool isField) {
-            if (shortName.EndsWith("__BackingField"))
-                return false;
-            else if (shortName.Contains("__DisplayClass"))
-                return false;
-            else if (shortName.Contains("<PrivateImplementationDetails>"))
-                return true;
-            else if (shortName.Contains("Runtime.CompilerServices.CallSite"))
-                return true;
-            else if (shortName.Contains("<Module>"))
-                return true;
-            else if (shortName.Contains("__SiteContainer"))
-                return true;
-            else if (shortName.Contains("__CachedAnonymousMethodDelegate") && !isField)
-                return true;
-            else if (shortName.StartsWith("CS$<") && !isField)
-                return true;
-            else {
-                var m = MangledNameRegex.Match(shortName);
-                if (m.Success) {
-                    switch (m.Groups[2].Value) {
-                        case "b":
-                            // Lambda
+            foreach (Match m2 in IgnoredKeywordRegex.Matches(shortName)) {
+                if (m2.Success) {
+                    switch (m2.Value) {
+                        case "__BackingField":
+                            return false;
+                        case "__DisplayClass":
+                            return false;
+                        case "CS$<":
+                            if (!isField)
+                                return true;
+
+                            break;
+                        case "<PrivateImplementationDetails>":
                             return true;
-                        case "c":
-                            // Class
-                            return false;
-                        case "d":
-                            // Enumerator
-                            return false;
+                        case "Runtime.CompilerServices.CallSite":
+                            return true;
+                        case "<Module>":
+                            return true;
+                        case "__SiteContainer":
+                            return true;
+                        case "__CachedAnonymousMethodDelegate":
+                            if (isField)
+                                return true;
+
+                            break;
                     }
+                }
+            }
+
+            var m = MangledNameRegex.Match(shortName);
+            if (m.Success) {
+                switch (m.Groups[2].Value) {
+                    case "b":
+                        // Lambda
+                        return true;
+                    case "c":
+                        // Class
+                        return false;
+                    case "d":
+                        // Enumerator
+                        return false;
                 }
             }
 
@@ -1121,8 +1218,13 @@ namespace JSIL.Internal {
         public readonly List<CustomAttribute> Attributes = new List<CustomAttribute>();
     }
 
-    public class MetadataCollection : Dictionary<string, AttributeEntry> {
+    public class MetadataCollection : IEnumerable<KeyValuePair<string, AttributeEntry>> {
+        protected Dictionary<string, AttributeEntry> Attributes = null;
+
         public MetadataCollection (ICustomAttributeProvider target) {
+            if (target.CustomAttributes.Count == 0)
+                return;
+
             foreach (var ca in target.CustomAttributes) {
                 AttributeEntry existing;
                 if (TryGetValue(ca.AttributeType.FullName, out existing))
@@ -1135,24 +1237,54 @@ namespace JSIL.Internal {
             }
         }
 
+        public void Add (string name, AttributeEntry entry) {
+            if (Attributes == null)
+                Attributes = new Dictionary<string, AttributeEntry>();
+
+            Attributes.Add(name, entry);
+        }
+
+        public bool TryGetValue (string name, out AttributeEntry entry) {
+            if (Attributes == null) {
+                entry = null;
+                return false;
+            }
+
+            return Attributes.TryGetValue(name, out entry);
+        }
+
+        public bool Remove (string key) {
+            if (Attributes != null)
+                return Attributes.Remove(key);
+
+            return false;
+        }
+
+        public void Clear () {
+            if (Attributes != null)
+                Attributes.Clear();
+        }
+
         public void Update (MetadataCollection rhs, bool replaceAll) {
             if (replaceAll)
                 Clear();
 
             AttributeEntry existing;
-            foreach (var kvp in rhs) {
-                if (TryGetValue(kvp.Key, out existing)) {
-                    if (existing.Inherited)
-                        Remove(kvp.Key);
-                    else
-                        continue;
-                }
+            if (rhs.Attributes != null) {
+                foreach (var kvp in rhs.Attributes) {
+                    if (TryGetValue(kvp.Key, out existing)) {
+                        if (existing.Inherited)
+                            Remove(kvp.Key);
+                        else
+                            continue;
+                    }
 
-                var inherited = new AttributeEntry {
-                    Inherited = true,
-                };
-                inherited.Attributes.AddRange(kvp.Value.Attributes);
-                Add(kvp.Key, inherited);
+                    var inherited = new AttributeEntry {
+                        Inherited = true,
+                    };
+                    inherited.Attributes.AddRange(kvp.Value.Attributes);
+                    Add(kvp.Key, inherited);
+                }
             }
         }
 
@@ -1162,7 +1294,10 @@ namespace JSIL.Internal {
         }
 
         public bool HasAttribute (string fullName) {
-            return ContainsKey(fullName);
+            if (Attributes != null)
+                return Attributes.ContainsKey(fullName);
+
+            return false;
         }
 
         public AttributeEntry GetAttribute (string fullName) {
@@ -1179,7 +1314,15 @@ namespace JSIL.Internal {
             if (attr == null)
                 return null;
 
-            return attr.Attributes.First().ConstructorArguments;
+            return attr.Attributes[0].ConstructorArguments;
+        }
+
+        public IEnumerator<KeyValuePair<string, AttributeEntry>> GetEnumerator () {
+            return Attributes.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator () {
+            return Attributes.GetEnumerator();
         }
     }
 
@@ -1477,7 +1620,8 @@ namespace JSIL.Internal {
             parent, identifier, method, proxies,
             ILBlockTranslator.IsIgnoredType(method.ReturnType) || 
                 method.Parameters.Any((p) => ILBlockTranslator.IsIgnoredType(p.ParameterType)),
-            method.IsNative || method.IsUnmanaged || method.IsUnmanagedExport || method.IsInternalCall || method.IsPInvokeImpl,
+            method.IsNative || method.IsUnmanaged || method.IsUnmanagedExport || 
+                method.IsInternalCall || method.IsPInvokeImpl || property.IsExternal,
             isFromProxy
         ) {
             Property = property;
@@ -1603,13 +1747,11 @@ namespace JSIL.Internal {
 
     public class EnumMemberInfo {
         public readonly TypeReference DeclaringType;
-        public readonly string FullName;
         public readonly string Name;
         public readonly long Value;
 
         public EnumMemberInfo (TypeDefinition type, string name, long value) {
             DeclaringType = type;
-            FullName = type.FullName + "." + name;
             Name = name;
             Value = value;
         }

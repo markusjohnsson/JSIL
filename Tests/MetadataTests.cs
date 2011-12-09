@@ -148,6 +148,21 @@ namespace JSIL.Tests {
         }
 
         [Test]
+        public void ProxiedMethodInheritance () {
+            GenericTest(
+                @"SpecialTestCases\ProxiedMethodInheritance.cs",
+                "DerivedClass.Method1\r\nDerivedClass.Method2\r\nDerivedClass2.Method1\r\nDerivedClass2.Method2",
+                "BaseClassProxy.Method1\r\nDerivedClassProxy.Method2\r\nBaseClassProxy.Method1\r\nDerivedClass2.Method2"
+            );
+
+            GenericTest(
+                @"SpecialTestCases\ProxiedMethodInheritance2.cs",
+                "DerivedClass.Method1\r\nBaseClass.Method2\r\nDerivedClass.Method1\r\nDerivedClass2.Method2",
+                "BaseClassProxy.Method1\r\nBaseClass.Method2\r\nBaseClassProxy.Method1\r\nDerivedClass2.Method2"
+            );
+        }
+
+        [Test]
         public void ProxiedOperators () {
             GenericTest(
                 @"SpecialTestCases\ProxiedOperators.cs",
@@ -161,7 +176,7 @@ namespace JSIL.Tests {
                 @"SpecialTestCases\StubbedMethodBodies.cs",
                 "",
                 "The external method 'Main' of type 'Program'",
-                new [] { new Regex(".*") }
+                new [] { ".*" }
             );
 
             try {
@@ -177,12 +192,194 @@ namespace JSIL.Tests {
                 Assert.IsTrue(generatedJs.Contains("\"remove_F"));
                 Assert.IsTrue(generatedJs.Contains("\"_ctor"));
 
-                Assert.IsTrue(generatedJs.Contains("Program.A$value = 0"));
-                Assert.IsTrue(generatedJs.Contains("T.prototype.D$value = 0"));
+                Assert.IsTrue(generatedJs.Contains("$.A$value = 0"));
+                Assert.IsTrue(generatedJs.Contains("$.prototype.D$value = 0"));
             } catch {
                 Console.WriteLine(generatedJs);
                 throw;
             }
+        }
+
+        [Test]
+        public void RenameMethod () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\RenameMethod.cs",
+                "Method",
+                "Method"
+            );
+
+            Assert.IsFalse(generatedJs.Contains("Program.Method"));
+            Assert.IsTrue(generatedJs.Contains("Program.RenamedMethod"));
+        }
+
+        [Test]
+        public void RenameField () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\RenameField.cs",
+                "Field",
+                "Field"
+            );
+
+            Assert.IsFalse(generatedJs.Contains("Program.Field"));
+            Assert.IsTrue(generatedJs.Contains("Program.RenamedField"));
+        }
+
+        [Test]
+        public void RenameProperty () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\RenameProperty.cs",
+                "Property",
+                "Property"
+            );
+
+            Assert.IsFalse(generatedJs.Contains("Program.Property"));
+            Assert.IsTrue(generatedJs.Contains("Program.RenamedProperty"));
+        }
+
+        [Test]
+        public void RenameEnum () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\RenameEnum.cs",
+                "A B MyEnum",
+                "A B RenamedEnum"
+            );
+
+            Assert.IsFalse(generatedJs.Contains("MyEnum"));
+            Assert.IsTrue(generatedJs.Contains("RenamedEnum"));
+        }
+
+        [Test]
+        public void RenameClass () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\RenameClass.cs",
+                "MyClass MyClass",
+                "MyClass RenamedClass"
+            );
+
+            Assert.IsFalse(generatedJs.Contains(".MyClass()"));
+            Assert.IsTrue(generatedJs.Contains(".RenamedClass()"));
+        }
+
+        [Test]
+        public void RenameStruct () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\RenameStruct.cs",
+                "MyStruct MyStruct",
+                "MyStruct RenamedStruct"
+            );
+
+            Assert.IsFalse(generatedJs.Contains(".MyStruct()"));
+            Assert.IsTrue(generatedJs.Contains(".RenamedStruct()"));
+        }
+
+        [Test]
+        public void RenameStaticClass () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\RenameStaticClass.cs",
+                "MyClass MyClass",
+                "MyClass RenamedClass"
+            );
+
+            Assert.IsFalse(generatedJs.Contains(".MyClass."));
+            Assert.IsTrue(generatedJs.Contains(".RenamedClass."));
+        }
+
+        [Test]
+        public void ExternalMethod () {
+            var generatedJs = GenericIgnoreTest(
+                @"SpecialTestCases\ExternalMethod.cs",
+                "Method", "external method 'Method' of type 'Program' has not"
+            );
+
+            Assert.IsFalse(generatedJs.Contains(".Method = function "));
+            Assert.IsTrue(generatedJs.Contains(".Program.Method("));
+        }
+
+        [Test]
+        public void ExternalField () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\ExternalField.cs",
+                "Field",
+                "undefined"
+            );
+
+            Assert.IsFalse(generatedJs.Contains(".Field = function "));
+            Assert.IsTrue(generatedJs.Contains(".Program.Field"));
+        }
+
+        [Test]
+        public void ExternalProperty () {
+            var generatedJs = GenericTest(
+                @"SpecialTestCases\ExternalProperty.cs",
+                "Property",
+                "undefined"
+            );
+
+            Assert.IsFalse(generatedJs.Contains(".get_Property = function "));
+            Assert.IsFalse(generatedJs.Contains(".MakeProperty($, \"Property\""));
+            Assert.IsTrue(generatedJs.Contains(".Program.Property"));
+        }
+
+        [Test]
+        public void ExternalPropertyGetter () {
+            var generatedJs = GenericIgnoreTest(
+                @"SpecialTestCases\ExternalPropertyGetter.cs",
+                "Property", "method 'get_Property' of type 'Program' has not"
+            );
+
+            Assert.IsFalse(generatedJs.Contains(".get_Property = function "));
+            Assert.IsTrue(generatedJs.Contains(".MakeProperty($, \"Property\""));
+            Assert.IsTrue(generatedJs.Contains(".Program.Property"));
+        }
+
+        [Test]
+        public void ExternalClass () {
+            var generatedJs = GenericIgnoreTest(
+                @"SpecialTestCases\ExternalClass.cs",
+                "MyClass", "external type 'MyClass' has not"
+            );
+
+            Assert.IsFalse(generatedJs.Contains("JSIL.MakeClass"));
+            Assert.IsTrue(generatedJs.Contains("MakeExternalType(\"MyClass\""));
+            Assert.IsTrue(generatedJs.Contains(".MyClass()"));
+        }
+
+        [Test]
+        public void ExternalStaticClass () {
+            var generatedJs = GenericIgnoreTest(
+                @"SpecialTestCases\ExternalStaticClass.cs",
+                "MyClass", "external type 'MyClass' has not"
+            );
+
+            Assert.IsTrue(generatedJs.Contains("MakeExternalType(\"MyClass\""));
+            Assert.IsTrue(generatedJs.Contains("MyClass."));
+        }
+
+        [Test]
+        public void ReplaceExternalClass () {
+            var generatedJs = GenericIgnoreTest(
+                @"SpecialTestCases\ReplaceExternalClass.cs",
+                "MyClass", "ReferenceError: UnqualifiedTypeName is not defined"
+            );
+
+            Assert.IsTrue(generatedJs.Contains("UnqualifiedTypeName"));
+            Assert.IsFalse(generatedJs.Contains("MyClass"));
+        }
+
+        [Test]
+        public void ReplaceNonExternalClass () {
+            var generatedJs = GenericIgnoreTest(
+                @"SpecialTestCases\ReplaceNonExternalClass.cs",
+                "MyClass", "ReferenceError: UnqualifiedTypeName is not defined"
+            );
+
+            Assert.IsTrue(generatedJs.Contains("UnqualifiedTypeName"));
+            Assert.IsTrue(generatedJs.Contains("UnqualifiedTypeName.GetString"));
+            Assert.IsTrue(generatedJs.Contains("UnqualifiedTypeName.get_StringProperty"));
+            Assert.IsTrue(generatedJs.Contains("UnqualifiedTypeName.set_StringProperty"));
+            Assert.IsTrue(generatedJs.Contains("UnqualifiedTypeName.StringField"));
+            Assert.IsTrue(generatedJs.Contains("return \"MyClass\""));
+            Assert.IsFalse(generatedJs.Contains("MyClass."));
         }
     }
 }

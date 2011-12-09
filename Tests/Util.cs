@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using JSIL.Internal;
+using JSIL.Translator;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.IO;
@@ -13,6 +15,7 @@ using System.Threading;
 using NUnit.Framework;
 using System.Globalization;
 using Microsoft.Win32;
+using MethodInfo = System.Reflection.MethodInfo;
 
 namespace JSIL.Tests {
     public class JavaScriptException : Exception {
@@ -84,34 +87,26 @@ namespace JSIL.Tests {
 
         public static readonly string TestSourceFolder;
         public static readonly string JSShellPath;
-        public static readonly string CoreJSPath, BootstrapJSPath;
+        public static readonly string CoreJSPath, BootstrapJSPath, LongJSPath;
 
         public readonly TypeInfoProvider TypeInfo;
-        public readonly Regex[] StubbedAssemblies;
+        public readonly string[] StubbedAssemblies;
         public readonly string Filename;
         public readonly Assembly Assembly;
         public readonly MethodInfo TestMethod;
 
-        static string GetPathOfAssembly (Assembly assembly) {
-            var uri = new Uri(assembly.CodeBase);
-            var result = Uri.UnescapeDataString(uri.AbsolutePath);
-            if (String.IsNullOrWhiteSpace(result))
-                result = assembly.Location;
-
-            return result;
-        }
-
         static ComparisonTest () {
             var testAssembly = typeof(ComparisonTest).Assembly;
-            var assemblyPath = Path.GetDirectoryName(GetPathOfAssembly(testAssembly));
+            var assemblyPath = Path.GetDirectoryName(Util.GetPathOfAssembly(testAssembly));
 
             TestSourceFolder = Path.GetFullPath(Path.Combine(assemblyPath, @"..\"));
             JSShellPath = Path.GetFullPath(Path.Combine(assemblyPath, @"..\..\Upstream\SpiderMonkey\js.exe"));
             CoreJSPath = Path.GetFullPath(Path.Combine(TestSourceFolder, @"..\Libraries\JSIL.Core.js"));
+            LongJSPath = Path.GetFullPath(Path.Combine(TestSourceFolder, @"..\Libraries\long.js"));
             BootstrapJSPath = Path.GetFullPath(Path.Combine(TestSourceFolder, @"..\Libraries\JSIL.Bootstrap.js"));
         }
 
-        public ComparisonTest (string filename, Regex[] stubbedAssemblies = null, TypeInfoProvider typeInfo = null) {
+        public ComparisonTest (string filename, string[] stubbedAssemblies = null, TypeInfoProvider typeInfo = null) {
             Filename = Path.Combine(TestSourceFolder, filename);
 
             var sourceCode = File.ReadAllText(Filename);
@@ -146,31 +141,37 @@ namespace JSIL.Tests {
                 }
         }
 
+        public static Configuration MakeDefaultConfiguration () {
+            return new Configuration {
+                FrameworkVersion = 4.0,
+                IncludeDependencies = false,
+                ApplyDefaults = false
+            };
+        }
+
         public string RunJavascript (string[] args, out string generatedJavascript, out long elapsedTranslation, out long elapsedJs) {
             var tempFilename = Path.GetTempFileName();
-            var translator = new JSIL.AssemblyTranslator(TypeInfo) {
-                IncludeDependencies = false
-            };
+            var configuration = MakeDefaultConfiguration();
 
             if (StubbedAssemblies != null)
-                translator.StubbedAssemblies.AddRange(StubbedAssemblies);
+                configuration.Assemblies.Stubbed.AddRange(StubbedAssemblies);
+
+            var translator = new JSIL.AssemblyTranslator(configuration, TypeInfo);
 
             string translatedJs;
             var translationStarted = DateTime.UtcNow.Ticks;
-            using (var ms = new MemoryStream()) {
-                var assemblies = translator.Translate(
-                    GetPathOfAssembly(Assembly), ms, 
-                    TypeInfo == null
-                );
-                translatedJs = Encoding.ASCII.GetString(ms.GetBuffer(), 0, (int)ms.Length);
+            var result = translator.Translate(
+                Util.GetPathOfAssembly(Assembly), TypeInfo == null
+            );
+            translatedJs = result.WriteToString();
 
-                // If we're using a preconstructed type information provider, we need to remove the type information
-                //  from the assembly we just translated
-                if (TypeInfo != null) {
-                    Assert.AreEqual(1, assemblies.Length);
-                    TypeInfo.Remove(assemblies);
-                }
+            // If we're using a preconstructed type information provider, we need to remove the type information
+            //  from the assembly we just translated
+            if (TypeInfo != null) {
+                Assert.AreEqual(1, result.Assemblies.Count);
+                TypeInfo.Remove(result.Assemblies.ToArray());
             }
+
             elapsedTranslation = DateTime.UtcNow.Ticks - translationStarted;
 
             var declaringType = JSIL.Internal.Util.EscapeIdentifier(TestMethod.DeclaringType.FullName, Internal.EscapingMode.TypeIdentifier);
@@ -183,7 +184,7 @@ namespace JSIL.Tests {
             }
 
             var invocationJs = String.Format(
-                @"timeout({0}); JSIL.Initialize(); JSIL.Host.warnedAboutRunLater = true; var started = elapsed(); {1}.Main({2}); var ended = elapsed(); print('// elapsed: ' + (ended - started));", 
+                @"timeout({0}); JSIL.Initialize(); var started = elapsed(); {1}.Main({2}); var ended = elapsed(); print('// elapsed: ' + (ended - started));", 
                 JavascriptExecutionTimeout, declaringType, argsJson
             );
 
@@ -194,7 +195,7 @@ namespace JSIL.Tests {
             try {
                 // throw new Exception();
 
-                var psi = new ProcessStartInfo(JSShellPath, String.Format("-w -j -m -f \"{0}\" -f \"{1}\" -f \"{2}\"", CoreJSPath, BootstrapJSPath, tempFilename)) {
+                var psi = new ProcessStartInfo(JSShellPath, String.Format("-j -m -n -f \"{0}\" -f \"{1}\" -f \"{2}\" -f \"{3}\"", CoreJSPath, BootstrapJSPath, LongJSPath, tempFilename)) {
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
@@ -326,11 +327,11 @@ namespace JSIL.Tests {
     public class GenericTestFixture {
         protected TypeInfoProvider MakeDefaultProvider () {
             // Construct a type info provider with default proxies loaded (kind of a hack)
-            return (new AssemblyTranslator(null)).TypeInfoProvider;
+            return (new AssemblyTranslator(ComparisonTest.MakeDefaultConfiguration())).TypeInfoProvider;
         }
 
         protected void RunComparisonTests (
-            string[] filenames, Regex[] stubbedAssemblies = null, TypeInfoProvider typeInfo = null
+            string[] filenames, string[] stubbedAssemblies = null, TypeInfoProvider typeInfo = null
         ) {
             const string keyName = @"Software\Squared\JSIL\Tests\PreviousFailures";
 
@@ -414,10 +415,15 @@ namespace JSIL.Tests {
 
         protected string GetJavascript (string fileName, string expectedText = null) {
             long elapsed, temp;
-            string generatedJs;
+            string generatedJs = null, output;
 
             using (var test = new ComparisonTest(fileName)) {
-                var output = test.RunJavascript(new string[0], out generatedJs, out temp, out elapsed);
+                try {
+                    output = test.RunJavascript(new string[0], out generatedJs, out temp, out elapsed);
+                } catch {
+                    Console.Error.WriteLine("// Generated JS: \r\n{0}", generatedJs);
+                    throw;
+                }
 
                 if (expectedText != null)
                     Assert.AreEqual(expectedText, output.Trim());
@@ -426,15 +432,16 @@ namespace JSIL.Tests {
             return generatedJs;
         }
 
-        protected string GenericTest (string fileName, string csharpOutput, string javascriptOutput, Regex[] stubbedAssemblies = null) {
+        protected string GenericTest (string fileName, string csharpOutput, string javascriptOutput, string[] stubbedAssemblies = null) {
             long elapsed, temp;
-            string generatedJs;
+            string generatedJs = null;
 
             using (var test = new ComparisonTest(fileName, stubbedAssemblies)) {
                 var csOutput = test.RunCSharp(new string[0], out elapsed);
-                var jsOutput = test.RunJavascript(new string[0], out generatedJs, out temp, out elapsed);
 
                 try {
+                    var jsOutput = test.RunJavascript(new string[0], out generatedJs, out temp, out elapsed);
+
                     Assert.AreEqual(csharpOutput, csOutput.Trim(), "Did not get expected output from C# test");
                     Assert.AreEqual(javascriptOutput, jsOutput.Trim(), "Did not get expected output from JavaScript test");
                 } catch {
@@ -446,20 +453,29 @@ namespace JSIL.Tests {
             return generatedJs;
         }
 
-        protected string GenericIgnoreTest (string fileName, string workingOutput, string jsErrorSubstring, Regex[] stubbedAssemblies = null) {
+        protected string GenericIgnoreTest (string fileName, string workingOutput, string jsErrorSubstring, string[] stubbedAssemblies = null) {
             long elapsed, temp;
-            string generatedJs = null;
+            string generatedJs = null, jsOutput = null;
 
             using (var test = new ComparisonTest(fileName, stubbedAssemblies)) {
                 var csOutput = test.RunCSharp(new string[0], out elapsed);
                 Assert.AreEqual(workingOutput, csOutput.Trim());
 
                 try {
-                    test.RunJavascript(new string[0], out generatedJs, out temp, out elapsed);
+                    jsOutput = test.RunJavascript(new string[0], out generatedJs, out temp, out elapsed);
                     Assert.Fail("Expected javascript to throw an exception containing the string \"" + jsErrorSubstring + "\".");
                 } catch (JavaScriptException jse) {
-                    if (!jse.ErrorText.Contains(jsErrorSubstring))
+                    if (!jse.ErrorText.Contains(jsErrorSubstring)) {
+                        Console.Error.WriteLine("// Generated JS: \r\n{0}", generatedJs);
+                        if (jsOutput != null)
+                            Console.Error.WriteLine("// JS output: \r\n{0}", jsOutput);
                         throw;
+                    }
+                } catch {
+                    Console.Error.WriteLine("// Generated JS: \r\n{0}", generatedJs);
+                    if (jsOutput != null)
+                        Console.Error.WriteLine("// JS output: \r\n{0}", jsOutput);
+                    throw;
                 }
 
             }
