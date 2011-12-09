@@ -40,6 +40,11 @@ namespace System
         [JSReplacement("$left !== $right")]
         public extern static bool operator !=(string left, string right);
 
+        public static String Concat(object arg0)
+        {
+            return _Concat(arg0);
+        }
+
         public static String Concat(String str0, String str1, String str2)
         {
             return _Concat(str0, str1, str2);
