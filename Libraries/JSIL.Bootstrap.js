@@ -99,15 +99,15 @@ JSIL.MulticastDelegate.New = function (delegates) {
   return result;
 };
 
-System.Action = JSIL.MakeDelegateType("System.Action", "Action");
-System.Action$b1 = JSIL.MakeDelegateType("System.Action`1", "Action`1");
-System.Action$b2 = JSIL.MakeDelegateType("System.Action`2", "Action`2");
-System.Action$b3 = JSIL.MakeDelegateType("System.Action`3", "Action`3");
+//System.Action = JSIL.MakeDelegateType("System.Action", "Action");
+//System.Action$b1 = JSIL.MakeDelegateType("System.Action`1", "Action`1");
+//System.Action$b2 = JSIL.MakeDelegateType("System.Action`2", "Action`2");
+//System.Action$b3 = JSIL.MakeDelegateType("System.Action`3", "Action`3");
 
-System.Func = JSIL.MakeDelegateType("System.Func", "Func");
-System.Func$b1 = JSIL.MakeDelegateType("System.Func`1", "Func`1");
-System.Func$b2 = JSIL.MakeDelegateType("System.Func`2", "Func`2");
-System.Func$b3 = JSIL.MakeDelegateType("System.Func`3", "Func`3");
+//System.Func = JSIL.MakeDelegateType("System.Func", "Func");
+//System.Func$b1 = JSIL.MakeDelegateType("System.Func`1", "Func`1");
+//System.Func$b2 = JSIL.MakeDelegateType("System.Func`2", "Func`2");
+//System.Func$b3 = JSIL.MakeDelegateType("System.Func`3", "Func`3");
 
 JSIL.MakeClass(Error, "System.Exception", true, [], function ($) {
   $.prototype._Message = null;
@@ -134,176 +134,176 @@ JSIL.MakeClass(Error, "System.Exception", true, [], function ($) {
 JSIL.MakeClass("System.Exception", "System.InvalidCastException", true);
 JSIL.MakeClass("System.Exception", "System.InvalidOperationException", true);
 
-JSIL.MakeClass("System.Object", "System.Console", true, [], function ($) {
-  JSIL.ExternalMembers($, false, 
-    "Write", "WriteLine"
-  );
-});
+//JSIL.MakeClass("System.Object", "System.Console", true, [], function ($) {
+//  JSIL.ExternalMembers($, false, 
+//    "Write", "WriteLine"
+//  );
+//});
 
-JSIL.ImplementExternals(
-  "System.Console", false, {
-    WriteLine: function () {
-      JSIL.Host.logWriteLine(System.String.Format.apply(null, arguments));
-    },
-    Write: function () {
-      JSIL.Host.logWrite(System.String.Format.apply(null, arguments));
-    }
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.Console", false, {
+//    WriteLine: function () {
+//      JSIL.Host.logWriteLine(System.String.Format.apply(null, arguments));
+//    },
+//    Write: function () {
+//      JSIL.Host.logWrite(System.String.Format.apply(null, arguments));
+//    }
+//  }
+//);
 
-String.prototype.Split = function (separators) {
-  if (separators.length > 1)
-    throw new Error("Split cannot handle more than one separator");
+//String.prototype.Split = function (separators) {
+//  if (separators.length > 1)
+//    throw new Error("Split cannot handle more than one separator");
 
-  return this.split(separators[0]);
-};
+//  return this.split(separators[0]);
+//};
 
-JSIL.MakeClass("System.Object", "System.String", true, [], function ($) {
-  $.__IsNativeType__ = true;
+//JSIL.MakeClass("System.Object", "System.String", true, [], function ($) {
+//  $.__IsNativeType__ = true;
 
-  JSIL.ExternalMembers($, false, 
-    "Concat", "Format"
-  );
-  JSIL.ExternalMembers($, true,
-    "_ctor", "_ctor$0", "_ctor$1", "_ctor$2"
-  );
-});
+//  JSIL.ExternalMembers($, false, 
+//    "Concat", "Format"
+//  );
+//  JSIL.ExternalMembers($, true,
+//    "_ctor", "_ctor$0", "_ctor$1", "_ctor$2"
+//  );
+//});
 
-JSIL.ImplementExternals(
-  "System.String", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "string") || (
-        (typeof (value.text) === "string") && (value.__proto__ === prototype)
-      );
-    },
-    Concat: function (firstValue) {
-      if (JSIL.IsArray(firstValue) && arguments.length == 1) {
-        return JSIL.ConcatString.apply(null, firstValue);
-      } else {
-        return JSIL.ConcatString(Array.prototype.slice.call(arguments));
-      }
-    },
-    Format: function (format) {
-      format = String(format);
+//JSIL.ImplementExternals(
+//  "System.String", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "string") || (
+//        (typeof (value.text) === "string") && (value.__proto__ === prototype)
+//      );
+//    },
+//    Concat: function (firstValue) {
+//      if (JSIL.IsArray(firstValue) && arguments.length == 1) {
+//        return JSIL.ConcatString.apply(null, firstValue);
+//      } else {
+//        return JSIL.ConcatString(Array.prototype.slice.call(arguments));
+//      }
+//    },
+//    Format: function (format) {
+//      format = String(format);
 
-      var regex = new RegExp("{([0-9]*)(?::([^}]*))?}", "g");
-      var match = null;
+//      var regex = new RegExp("{([0-9]*)(?::([^}]*))?}", "g");
+//      var match = null;
 
-      var values = Array.prototype.slice.call(arguments, 1);
+//      var values = Array.prototype.slice.call(arguments, 1);
 
-      if ((values.length == 1) && JSIL.IsArray(values[0]))
-        values = values[0];
+//      if ((values.length == 1) && JSIL.IsArray(values[0]))
+//        values = values[0];
 
-      var matcher = function (match, index, valueFormat, offset, str) {
-        index = parseInt(index);
+//      var matcher = function (match, index, valueFormat, offset, str) {
+//        index = parseInt(index);
 
-        var value = values[index];
+//        var value = values[index];
 
-        if (valueFormat) {
+//        if (valueFormat) {
 
-          switch (valueFormat[0]) {
-            case 'f':
-            case 'F':
-              var digits = parseInt(valueFormat.substr(1));
-              return parseFloat(value).toFixed(digits);
+//          switch (valueFormat[0]) {
+//            case 'f':
+//            case 'F':
+//              var digits = parseInt(valueFormat.substr(1));
+//              return parseFloat(value).toFixed(digits);
 
-            default:
-              throw new Error("Unsupported format string: " + valueFormat);
-          }
-        } else {
+//            default:
+//              throw new Error("Unsupported format string: " + valueFormat);
+//          }
+//        } else {
 
-          if (typeof (value) === "boolean") {
-            if (value)
-              return "True";
-            else
-              return "False";
-          } else {
-            return String(value);
-          }
-        }
-      };
+//          if (typeof (value) === "boolean") {
+//            if (value)
+//              return "True";
+//            else
+//              return "False";
+//          } else {
+//            return String(value);
+//          }
+//        }
+//      };
 
-      return format.replace(regex, matcher);
-    }
-  }
-);
+//      return format.replace(regex, matcher);
+//    }
+//  }
+//);
 
-JSIL.ImplementExternals(
-  "System.String", true, {
-    _ctor: function (text) {
-      if (typeof (text) === "string")
-        return text;
-      else
-        return String(text);
-    },
-    _ctor$0: function (chars, startIndex, length) {
-      var arr = chars.slice(startIndex, length);
-      return arr.join("");
-    },
-    _ctor$1: function (chars) {
-      return _ctor$0.call(this, chars, 0, chars.length);
-    },
-    _ctor$2: function (ch, length) {
-      var arr = new Array(length);
-      for (var i = 0; i < length; i++)
-        arr[i] = ch;
-      return arr.join("");
-    }
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.String", true, {
+//    _ctor: function (text) {
+//      if (typeof (text) === "string")
+//        return text;
+//      else
+//        return String(text);
+//    },
+//    _ctor$0: function (chars, startIndex, length) {
+//      var arr = chars.slice(startIndex, length);
+//      return arr.join("");
+//    },
+//    _ctor$1: function (chars) {
+//      return _ctor$0.call(this, chars, 0, chars.length);
+//    },
+//    _ctor$2: function (ch, length) {
+//      var arr = new Array(length);
+//      for (var i = 0; i < length; i++)
+//        arr[i] = ch;
+//      return arr.join("");
+//    }
+//  }
+//);
 
-JSIL.ConcatString = function (/* ...values */) {
-  var result = String(arguments[0]);
+//JSIL.ConcatString = function (/* ...values */) {
+//  var result = String(arguments[0]);
 
-  for (var i = 1, l = arguments.length; i < l; i++) {
-    var arg = arguments[i];
-    if (typeof (arg) === "string")
-      result += arg;
-    else
-      result += String(arg);
-  }
+//  for (var i = 1, l = arguments.length; i < l; i++) {
+//    var arg = arguments[i];
+//    if (typeof (arg) === "string")
+//      result += arg;
+//    else
+//      result += String(arg);
+//  }
 
-  return result;
-};
-System.String.Empty = '';
+//  return result;
+//};
+//System.String.Empty = '';
 
-JSIL.MakeClass("System.Object", "JSIL.ArrayEnumerator", true, [], function ($) {
-  $.prototype._ctor = function (array) {
-    this._array = array;
-    this._length = array.length;
-    this._index = -1;
-  };
-  $.prototype.Reset = function () {
-    if (this._array === null)
-      throw new Error("Enumerator is disposed or not initialized");
+//JSIL.MakeClass("System.Object", "JSIL.ArrayEnumerator", true, [], function ($) {
+//  $.prototype._ctor = function (array) {
+//    this._array = array;
+//    this._length = array.length;
+//    this._index = -1;
+//  };
+//  $.prototype.Reset = function () {
+//    if (this._array === null)
+//      throw new Error("Enumerator is disposed or not initialized");
 
-    this._index = -1;
-  };
-  $.prototype.MoveNext = function () {
-    if (this._index >= this._length)
-      return false;
+//    this._index = -1;
+//  };
+//  $.prototype.MoveNext = function () {
+//    if (this._index >= this._length)
+//      return false;
 
-    this._index += 1;
-    return (this._index < this._length);
-  };
-  $.prototype.Dispose = function () {
-    this._array = null;
-    this._index = 0;
-    this._length = -1;
-  };
-  $.prototype.get_Current = function () {
-    return this._array[this._index];
-  };
-  Object.defineProperty(
-      $.prototype, "Current", { 
-        get: $.prototype.get_Current,
-        configurable: true
-      }
-  );
-  JSIL.ImplementInterfaces($, [
-    System.IDisposable, System.Collections.IEnumerator, System.Collections.Generic.IEnumerator$b1
-  ]);
-});
+//    this._index += 1;
+//    return (this._index < this._length);
+//  };
+//  $.prototype.Dispose = function () {
+//    this._array = null;
+//    this._index = 0;
+//    this._length = -1;
+//  };
+//  $.prototype.get_Current = function () {
+//    return this._array[this._index];
+//  };
+//  Object.defineProperty(
+//      $.prototype, "Current", { 
+//        get: $.prototype.get_Current,
+//        configurable: true
+//      }
+//  );
+//  JSIL.ImplementInterfaces($, [
+//    System.IDisposable, System.Collections.IEnumerator, System.Collections.Generic.IEnumerator$b1
+//  ]);
+//});
 
 JSIL.MakeClass("System.Object", "System.Threading.Thread", true);
 System.Threading.Thread._cctor2 = function () {
@@ -322,112 +322,112 @@ JSIL.MakeProperty(
   System.Threading.Thread.get_CurrentThread, null
 );
 
-$jsilcore.$ListExternals = {
-  _ctor: function (sizeOrInitializer) {
-    var size = Number(sizeOrInitializer);
+//$jsilcore.$ListExternals = {
+//  _ctor: function (sizeOrInitializer) {
+//    var size = Number(sizeOrInitializer);
 
-    if (isNaN(size)) {
-      this._items = new Array();
-      this._items.push.apply(this._items, sizeOrInitializer);
-      this._size = this._items.length;
-    } else {
-      this._items = new Array(size);
-      this._size = size;
-    }
-  },
-  Add: function (item) {
-    if (this._size >= this._items.length) {
-      this._items.push(item);
-    } else {
-      this._items[this._size] = item;
-    }
-    this._size += 1;
-  },
-  AddRange: function (items) {
-    var e = items.IEnumerable_GetEnumerator();
-    try {
-      while (e.MoveNext()) {
-        if (this._size >= this._items.length) {
-          this._items.push(e.Current);
-        } else {
-          this._items[this._size] = e.Current;
-        }
-        this._size += 1;
-      }
-    } finally {
-      e.IDisposable_Dispose();
-    }
-  },
-  Remove: function (item) {
-    var index = this._items.indexOf(item);
-    if (index === -1)
-      return false;
+//    if (isNaN(size)) {
+//      this._items = new Array();
+//      this._items.push.apply(this._items, sizeOrInitializer);
+//      this._size = this._items.length;
+//    } else {
+//      this._items = new Array(size);
+//      this._size = size;
+//    }
+//  },
+//  Add: function (item) {
+//    if (this._size >= this._items.length) {
+//      this._items.push(item);
+//    } else {
+//      this._items[this._size] = item;
+//    }
+//    this._size += 1;
+//  },
+//  AddRange: function (items) {
+//    var e = items.IEnumerable_GetEnumerator();
+//    try {
+//      while (e.MoveNext()) {
+//        if (this._size >= this._items.length) {
+//          this._items.push(e.Current);
+//        } else {
+//          this._items[this._size] = e.Current;
+//        }
+//        this._size += 1;
+//      }
+//    } finally {
+//      e.IDisposable_Dispose();
+//    }
+//  },
+//  Remove: function (item) {
+//    var index = this._items.indexOf(item);
+//    if (index === -1)
+//      return false;
 
-    this.RemoveAt(index);
-  },
-  RemoveAt: function (index) {
-    this._items.splice(index, 1);
-    this._size -= 1;
-  },
-  Clear: function () {
-    this._size = 0;
-  },
-  get_Item: function (index) {
-    return this._items[index];
-  },
-  get_Count: function () {
-    return this._size;
-  },
-  get_Capacity: function () {
-    return this._items.length;
-  },
-  GetEnumerator: function () {
-    // Detect whether we are a List<T> or an ArrayList.
-    var elementType = this.T;
-    if (typeof (elementType) === "undefined")
-      elementType = System.Object;
+//    this.RemoveAt(index);
+//  },
+//  RemoveAt: function (index) {
+//    this._items.splice(index, 1);
+//    this._size -= 1;
+//  },
+//  Clear: function () {
+//    this._size = 0;
+//  },
+//  get_Item: function (index) {
+//    return this._items[index];
+//  },
+//  get_Count: function () {
+//    return this._size;
+//  },
+//  get_Capacity: function () {
+//    return this._items.length;
+//  },
+//  GetEnumerator: function () {
+//    // Detect whether we are a List<T> or an ArrayList.
+//    var elementType = this.T;
+//    if (typeof (elementType) === "undefined")
+//      elementType = System.Object;
 
-    return new (System.Collections.Generic.List$b1_Enumerator.Of(elementType)) (this);
-  }
-};
+//    return new (System.Collections.Generic.List$b1_Enumerator.Of(elementType)) (this);
+//  }
+//};
 
-JSIL.ImplementExternals("System.Collections.Generic.List`1", true, $jsilcore.$ListExternals);
+//JSIL.ImplementExternals("System.Collections.Generic.List`1", true, $jsilcore.$ListExternals);
 
-// Lazy way of sharing method implementations between ArrayList and List<T>.
-JSIL.ImplementExternals("System.Collections.ArrayList", true, $jsilcore.$ListExternals);
+//// Lazy way of sharing method implementations between ArrayList and List<T>.
+//JSIL.ImplementExternals("System.Collections.ArrayList", true, $jsilcore.$ListExternals);
 
-JSIL.MakeClass("System.Object", "System.Collections.Generic.List`1", true, ["T"], function ($) {
-  JSIL.ExternalMembers($, true, 
-    "_ctor", "Add", "AddRange", "Remove", "RemoveAt", "Clear", 
-    "get_Item", "get_Count", "get_Capacity", "GetEnumerator"
-  );
+//JSIL.MakeClass("System.Object", "System.Collections.Generic.List`1", true, ["T"], function ($) {
+//  JSIL.ExternalMembers($, true, 
+//    "_ctor", "Add", "AddRange", "Remove", "RemoveAt", "Clear", 
+//    "get_Item", "get_Count", "get_Capacity", "GetEnumerator"
+//  );
 
-  JSIL.MakeProperty(
-    $.prototype, "Count", 
-    $.prototype.get_Count, null
-  );
+//  JSIL.MakeProperty(
+//    $.prototype, "Count", 
+//    $.prototype.get_Count, null
+//  );
 
-  JSIL.ImplementInterfaces($, [
-    System.Collections.IEnumerable, System.Collections.Generic.IEnumerable$b1
-  ]);
-});
+//  JSIL.ImplementInterfaces($, [
+//    System.Collections.IEnumerable, System.Collections.Generic.IEnumerable$b1
+//  ]);
+//});
 
-// TODO: This type is actually a struct in the CLR
-JSIL.MakeClass("JSIL.ArrayEnumerator", "System.Collections.Generic.List`1/Enumerator", true, ["T"], function ($) {
-  $.prototype._array = null;
-  $.prototype._length = 0;
-  $.prototype._index = -1;
-  $.prototype._ctor = function (list) {
-    if (typeof (list) != "undefined") {
-      this._array = list._items;
-      this._length = list.Count;
-    }
-  };
-  $.prototype.MoveNext = JSIL.ArrayEnumerator.prototype.MoveNext;
-  $.prototype.Dispose = JSIL.ArrayEnumerator.prototype.Dispose;
-  $.prototype.Reset = JSIL.ArrayEnumerator.prototype.Reset;
-  $.prototype.get_Current = JSIL.ArrayEnumerator.prototype.get_Current;
-});
+//// TODO: This type is actually a struct in the CLR
+//JSIL.MakeClass("JSIL.ArrayEnumerator", "System.Collections.Generic.List`1/Enumerator", true, ["T"], function ($) {
+//  $.prototype._array = null;
+//  $.prototype._length = 0;
+//  $.prototype._index = -1;
+//  $.prototype._ctor = function (list) {
+//    if (typeof (list) != "undefined") {
+//      this._array = list._items;
+//      this._length = list.Count;
+//    }
+//  };
+//  $.prototype.MoveNext = JSIL.ArrayEnumerator.prototype.MoveNext;
+//  $.prototype.Dispose = JSIL.ArrayEnumerator.prototype.Dispose;
+//  $.prototype.Reset = JSIL.ArrayEnumerator.prototype.Reset;
+//  $.prototype.get_Current = JSIL.ArrayEnumerator.prototype.get_Current;
+//});
 
 System.Threading.Interlocked.CompareExchange$b1 = JSIL.GenericMethod(
   ["T"], 
@@ -467,430 +467,430 @@ System.Threading.Monitor.Exit = function (obj) {
   obj.__LockCount__ = current - 1;
 };
 
-JSIL.MakeClass("System.Object", "System.Random", true, [], function ($) {
-  JSIL.ExternalMembers($, true,
-    "_ctor", "Next", "NextDouble"
-  );
-});
+//JSIL.MakeClass("System.Object", "System.Random", true, [], function ($) {
+//  JSIL.ExternalMembers($, true,
+//    "_ctor", "Next", "NextDouble"
+//  );
+//});
 
-JSIL.ImplementExternals("System.Random", true, {
-  _ctor: function () {
-  },
-  Next: function (min, max) {
-    if (typeof (min) === "undefined") {
-      min = 0;
-      max = Int32.MaxValue;
-    } else if (typeof (max) === "undefined") {
-      max = min;
-      min = 0;
-    }
+//JSIL.ImplementExternals("System.Random", true, {
+//  _ctor: function () {
+//  },
+//  Next: function (min, max) {
+//    if (typeof (min) === "undefined") {
+//      min = 0;
+//      max = Int32.MaxValue;
+//    } else if (typeof (max) === "undefined") {
+//      max = min;
+//      min = 0;
+//    }
 
-    return Math.floor(Math.random() * (max - min)) + min;
-  },
-  NextDouble: Math.random
-});
+//    return Math.floor(Math.random() * (max - min)) + min;
+//  },
+//  NextDouble: Math.random
+//});
 
-JSIL.ImplementExternals(
-  "System.Math", false, {
-    Max: Math.max,
-    Min: Math.min
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.Math", false, {
+//    Max: Math.max,
+//    Min: Math.min
+//  }
+//);
 
-JSIL.MakeStaticClass("System.Math", true, function ($) {
-  JSIL.ExternalMembers($, false, 
-    "Min", "Max"
-  );
-});
+//JSIL.MakeStaticClass("System.Math", true, function ($) {
+//  JSIL.ExternalMembers($, false, 
+//    "Min", "Max"
+//  );
+//});
 
-JSIL.ImplementExternals(
-  "System.Boolean", false, {
-    CheckType: function (value) {
-      return (value === false) || (value === true);
-    }
-  }
-);
-JSIL.MakeNumericType(Boolean, "System.Boolean", true);
+//JSIL.ImplementExternals(
+//  "System.Boolean", false, {
+//    CheckType: function (value) {
+//      return (value === false) || (value === true);
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(Boolean, "System.Boolean", true);
 
-JSIL.ImplementExternals(
-  "System.Char", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "string") && (value.length == 1);
-    }
-  }
-);
-JSIL.MakeNumericType(String, "System.Char", true);
+//JSIL.ImplementExternals(
+//  "System.Char", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "string") && (value.length == 1);
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(String, "System.Char", true);
 
-JSIL.ImplementExternals(
-  "System.Byte", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number") && (value >= 0) && (value <= 255);
-    }
-  }
-);
-JSIL.MakeNumericType(Number, "System.Byte", true);
+//JSIL.ImplementExternals(
+//  "System.Byte", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number") && (value >= 0) && (value <= 255);
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.Byte", true);
 
-JSIL.ImplementExternals(
-  "System.UInt16", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number") && (value >= 0);
-    },
-    Parse: function (text) {
-      return Math.abs(parseInt(text, 10));
-    }
-  }
-);
-JSIL.MakeNumericType(Number, "System.UInt16", true);
-System.UInt16.MaxValue = 65535;
+//JSIL.ImplementExternals(
+//  "System.UInt16", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number") && (value >= 0);
+//    },
+//    Parse: function (text) {
+//      return Math.abs(parseInt(text, 10));
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.UInt16", true);
+//System.UInt16.MaxValue = 65535;
 
-JSIL.ImplementExternals(
-  "System.Int16", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number");
-    },
-    Parse: function (text) {
-      return Math.abs(parseInt(text, 10));
-    }
-  }
-);
-JSIL.MakeNumericType(Number, "System.Int16", true);
-System.Int16.MaxValue = 32767;
+//JSIL.ImplementExternals(
+//  "System.Int16", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number");
+//    },
+//    Parse: function (text) {
+//      return Math.abs(parseInt(text, 10));
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.Int16", true);
+//System.Int16.MaxValue = 32767;
 
-JSIL.ImplementExternals(
-  "System.UInt32", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number") && (value >= 0);
-    },
-    Parse: function (text) {
-      return Math.abs(parseInt(text, 10));
-    }
-  }
-);
-JSIL.MakeNumericType(Number, "System.UInt32", true);
-System.UInt32.MaxValue = 4294967295;
+//JSIL.ImplementExternals(
+//  "System.UInt32", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number") && (value >= 0);
+//    },
+//    Parse: function (text) {
+//      return Math.abs(parseInt(text, 10));
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.UInt32", true);
+//System.UInt32.MaxValue = 4294967295;
 
-JSIL.ImplementExternals(
-  "System.Int32", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number");
-    },
-    Parse: function (text) {
-      return parseInt(text, 10);
-    }
-  }
-);
-JSIL.MakeNumericType(Number, "System.Int32", true);
-System.Int32.MaxValue = 2147483647;
+//JSIL.ImplementExternals(
+//  "System.Int32", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number");
+//    },
+//    Parse: function (text) {
+//      return parseInt(text, 10);
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.Int32", true);
+//System.Int32.MaxValue = 2147483647;
 
-JSIL.ImplementExternals(
-  "System.Int64", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number");
-    },
-    Parse: function (text) {
-      return parseInt(text, 10);
-    }
-  }
-);
-JSIL.MakeNumericType(Number, "System.Int64", true);
+//JSIL.ImplementExternals(
+//  "System.Int64", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number");
+//    },
+//    Parse: function (text) {
+//      return parseInt(text, 10);
+//    }
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.Int64", true);
 
-JSIL.ImplementExternals(
-  "System.Single", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number");
-    },
-    IsNaN: isNaN
-  }
-);
-JSIL.MakeNumericType(Number, "System.Single", false);
+//JSIL.ImplementExternals(
+//  "System.Single", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number");
+//    },
+//    IsNaN: isNaN
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.Single", false);
 
-JSIL.ImplementExternals(
-  "System.Double", false, {
-    CheckType: function (value) {
-      return (typeof (value) === "number");
-    },
-    IsNaN: isNaN
-  }
-);
-JSIL.MakeNumericType(Number, "System.Double", false);
+//JSIL.ImplementExternals(
+//  "System.Double", false, {
+//    CheckType: function (value) {
+//      return (typeof (value) === "number");
+//    },
+//    IsNaN: isNaN
+//  }
+//);
+//JSIL.MakeNumericType(Number, "System.Double", false);
 
-JSIL.MakeStruct("System.ValueType", "System.Decimal", true);
-System.Decimal.CheckType = function (value) {
-  return (typeof (value) === "number") || 
-    JSIL.CheckType(value, System.Decimal, true);
-};
-System.Decimal.prototype._ctor = function (value) {
-  this.value = Number(value);
-};
-System.Decimal.prototype.toString = function (format) {
-  return this.value.toString();
-};
-System.Decimal.op_Explicit = function (value) {
-  if (JSIL.CheckType(value, System.Decimal, true))
-    return value;
-  else
-    return new System.Decimal(value);
-};
-System.Decimal.op_Addition = function (lhs, rhs) {
-  lhs = System.Decimal.op_Explicit(lhs);
-  rhs = System.Decimal.op_Explicit(rhs);
-  return new System.Decimal(lhs.value + rhs.value);
-};
-System.Decimal.op_Subtraction = function (lhs, rhs) {
-  lhs = System.Decimal.op_Explicit(lhs);
-  rhs = System.Decimal.op_Explicit(rhs);
-  return new System.Decimal(lhs.value - rhs.value);
-};
-System.Decimal.op_Multiply = function (lhs, rhs) {
-  lhs = System.Decimal.op_Explicit(lhs);
-  rhs = System.Decimal.op_Explicit(rhs);
-  return new System.Decimal(lhs.value * rhs.value);
-};
-System.Decimal.op_Division = function (lhs, rhs) {
-  lhs = System.Decimal.op_Explicit(lhs);
-  rhs = System.Decimal.op_Explicit(rhs);
-  return new System.Decimal(lhs.value / rhs.value);
-};
+//JSIL.MakeStruct("System.ValueType", "System.Decimal", true);
+//System.Decimal.CheckType = function (value) {
+//  return (typeof (value) === "number") || 
+//    JSIL.CheckType(value, System.Decimal, true);
+//};
+//System.Decimal.prototype._ctor = function (value) {
+//  this.value = Number(value);
+//};
+//System.Decimal.prototype.toString = function (format) {
+//  return this.value.toString();
+//};
+//System.Decimal.op_Explicit = function (value) {
+//  if (JSIL.CheckType(value, System.Decimal, true))
+//    return value;
+//  else
+//    return new System.Decimal(value);
+//};
+//System.Decimal.op_Addition = function (lhs, rhs) {
+//  lhs = System.Decimal.op_Explicit(lhs);
+//  rhs = System.Decimal.op_Explicit(rhs);
+//  return new System.Decimal(lhs.value + rhs.value);
+//};
+//System.Decimal.op_Subtraction = function (lhs, rhs) {
+//  lhs = System.Decimal.op_Explicit(lhs);
+//  rhs = System.Decimal.op_Explicit(rhs);
+//  return new System.Decimal(lhs.value - rhs.value);
+//};
+//System.Decimal.op_Multiply = function (lhs, rhs) {
+//  lhs = System.Decimal.op_Explicit(lhs);
+//  rhs = System.Decimal.op_Explicit(rhs);
+//  return new System.Decimal(lhs.value * rhs.value);
+//};
+//System.Decimal.op_Division = function (lhs, rhs) {
+//  lhs = System.Decimal.op_Explicit(lhs);
+//  rhs = System.Decimal.op_Explicit(rhs);
+//  return new System.Decimal(lhs.value / rhs.value);
+//};
 
-System.Environment.GetResourceFromDefault = function (key) {
-  return key;
-};
-System.Environment.nativeGetTickCount = function () {
-  var t = new Date();
-  return t.getTime();
-};
+//System.Environment.GetResourceFromDefault = function (key) {
+//  return key;
+//};
+//System.Environment.nativeGetTickCount = function () {
+//  var t = new Date();
+//  return t.getTime();
+//};
 
-JSIL.MakeClass("System.Object", "System.Text.Encoding", true, [], function ($) {
-  $.prototype._ctor = function () {
-    System.Object.prototype._ctor.call(this, arguments);
-  };
-});
-JSIL.ImplementExternals("System.Text.Encoding", false, {
-  _cctor2: function () {
-    // This type already has a cctor so we add a second one.
-    System.Text.Encoding.asciiEncoding = new System.Text.ASCIIEncoding();
-  },
-  get_ASCII: function () {
-    return System.Text.Encoding.asciiEncoding;
-  }
-});
+//JSIL.MakeClass("System.Object", "System.Text.Encoding", true, [], function ($) {
+//  $.prototype._ctor = function () {
+//    System.Object.prototype._ctor.call(this, arguments);
+//  };
+//});
+//JSIL.ImplementExternals("System.Text.Encoding", false, {
+//  _cctor2: function () {
+//    // This type already has a cctor so we add a second one.
+//    System.Text.Encoding.asciiEncoding = new System.Text.ASCIIEncoding();
+//  },
+//  get_ASCII: function () {
+//    return System.Text.Encoding.asciiEncoding;
+//  }
+//});
 
-JSIL.MakeClass("System.Text.Encoding", "System.Text.ASCIIEncoding", true, [], function ($) {
-  $.prototype._ctor = function () {
-    System.Text.Encoding.prototype._ctor.call(this, arguments);
-  };
-});
+//JSIL.MakeClass("System.Text.Encoding", "System.Text.ASCIIEncoding", true, [], function ($) {
+//  $.prototype._ctor = function () {
+//    System.Text.Encoding.prototype._ctor.call(this, arguments);
+//  };
+//});
 
-JSIL.MakeStruct("System.ValueType", "System.TimeSpan", true, [], function ($) {
-    JSIL.ExternalMembers($, true, 
-      "get_Ticks", "get_Milliseconds", "get_TotalMilliseconds", "get_Seconds",
-      "get_Minutes", "get_Hours", "get_Days", "get_TotalSeconds", "get_TotalMinutes"
-    );
+//JSIL.MakeStruct("System.ValueType", "System.TimeSpan", true, [], function ($) {
+//    JSIL.ExternalMembers($, true, 
+//      "get_Ticks", "get_Milliseconds", "get_TotalMilliseconds", "get_Seconds",
+//      "get_Minutes", "get_Hours", "get_Days", "get_TotalSeconds", "get_TotalMinutes"
+//    );
 
-    JSIL.MakeProperty($.prototype, "Ticks",
-      $.prototype.get_Ticks);
+//    JSIL.MakeProperty($.prototype, "Ticks",
+//      $.prototype.get_Ticks);
 
-    JSIL.MakeProperty($.prototype, "Milliseconds",
-      $.prototype.get_Milliseconds);
+//    JSIL.MakeProperty($.prototype, "Milliseconds",
+//      $.prototype.get_Milliseconds);
 
-    JSIL.MakeProperty($.prototype, "TotalMilliseconds",
-      $.prototype.get_TotalMilliseconds);
+//    JSIL.MakeProperty($.prototype, "TotalMilliseconds",
+//      $.prototype.get_TotalMilliseconds);
 
-    JSIL.MakeProperty($.prototype, "Seconds",
-      $.prototype.get_Seconds);
+//    JSIL.MakeProperty($.prototype, "Seconds",
+//      $.prototype.get_Seconds);
 
-    JSIL.MakeProperty($.prototype, "Minutes",
-      $.prototype.get_Minutes);
+//    JSIL.MakeProperty($.prototype, "Minutes",
+//      $.prototype.get_Minutes);
 
-    JSIL.MakeProperty($.prototype, "Hours",
-      $.prototype.get_Hours);
+//    JSIL.MakeProperty($.prototype, "Hours",
+//      $.prototype.get_Hours);
 
-    JSIL.MakeProperty($.prototype, "Days",
-      $.prototype.get_Days);
+//    JSIL.MakeProperty($.prototype, "Days",
+//      $.prototype.get_Days);
 
-    JSIL.MakeProperty($.prototype, "TotalSeconds",
-      $.prototype.get_TotalSeconds);
+//    JSIL.MakeProperty($.prototype, "TotalSeconds",
+//      $.prototype.get_TotalSeconds);
 
-    JSIL.MakeProperty($.prototype, "TotalMinutes",
-      $.prototype.get_TotalMinutes);
-});
+//    JSIL.MakeProperty($.prototype, "TotalMinutes",
+//      $.prototype.get_TotalMinutes);
+//});
 
-JSIL.ImplementExternals(
-  "System.TimeSpan", false, {
-    FromTicks: function (ticks) {
-      var result = Object.create(System.TimeSpan.prototype);
-      result._ticks = Math.floor(ticks);
-      return result;
-    },
+//JSIL.ImplementExternals(
+//  "System.TimeSpan", false, {
+//    FromTicks: function (ticks) {
+//      var result = Object.create(System.TimeSpan.prototype);
+//      result._ticks = Math.floor(ticks);
+//      return result;
+//    },
 
-    FromMilliseconds: function (milliseconds) {
-      var result = Object.create(System.TimeSpan.prototype);
-      result._ticks = Math.floor(milliseconds * 10000);
-      return result;
-    },
+//    FromMilliseconds: function (milliseconds) {
+//      var result = Object.create(System.TimeSpan.prototype);
+//      result._ticks = Math.floor(milliseconds * 10000);
+//      return result;
+//    },
 
-    FromSeconds: function (seconds) {
-      var result = Object.create(System.TimeSpan.prototype);
-      result._ticks = Math.floor(seconds * 10000000);
-      return result;
-    },
+//    FromSeconds: function (seconds) {
+//      var result = Object.create(System.TimeSpan.prototype);
+//      result._ticks = Math.floor(seconds * 10000000);
+//      return result;
+//    },
 
-    FromMinutes: function (minutes) {
-      var result = Object.create(System.TimeSpan.prototype);
-      result._ticks = Math.floor(minutes * 60 * 10000000);
-      return result;
-    },
+//    FromMinutes: function (minutes) {
+//      var result = Object.create(System.TimeSpan.prototype);
+//      result._ticks = Math.floor(minutes * 60 * 10000000);
+//      return result;
+//    },
 
-    op_Equality: function (lhs, rhs) {
-      return lhs._ticks === rhs._ticks;
-    },
+//    op_Equality: function (lhs, rhs) {
+//      return lhs._ticks === rhs._ticks;
+//    },
 
-    op_Inequality: function (lhs, rhs) {
-      return lhs._ticks !== rhs._ticks;
-    },
+//    op_Inequality: function (lhs, rhs) {
+//      return lhs._ticks !== rhs._ticks;
+//    },
 
-    op_GreaterThan: function (lhs, rhs) {
-      return lhs._ticks > rhs._ticks;
-    },
+//    op_GreaterThan: function (lhs, rhs) {
+//      return lhs._ticks > rhs._ticks;
+//    },
 
-    op_LessThan: function (lhs, rhs) {
-      return lhs._ticks < rhs._ticks;
-    },
+//    op_LessThan: function (lhs, rhs) {
+//      return lhs._ticks < rhs._ticks;
+//    },
 
-    op_Addition: function (lhs, rhs) {
-      var result = Object.create(System.TimeSpan.prototype);
-      result._ticks = lhs._ticks + rhs._ticks;
-      return result;
-    },
+//    op_Addition: function (lhs, rhs) {
+//      var result = Object.create(System.TimeSpan.prototype);
+//      result._ticks = lhs._ticks + rhs._ticks;
+//      return result;
+//    },
 
-    op_Subtraction: function (lhs, rhs) {
-      var result = Object.create(System.TimeSpan.prototype);
-      result._ticks = lhs._ticks - rhs._ticks;
-      return result;
-    }
-  }
-);
+//    op_Subtraction: function (lhs, rhs) {
+//      var result = Object.create(System.TimeSpan.prototype);
+//      result._ticks = lhs._ticks - rhs._ticks;
+//      return result;
+//    }
+//  }
+//);
 
-JSIL.ImplementExternals(
-  "System.TimeSpan", true, {
-    _ctor$0: function (ticks) {
-      this._ticks = ticks;
-    },
+//JSIL.ImplementExternals(
+//  "System.TimeSpan", true, {
+//    _ctor$0: function (ticks) {
+//      this._ticks = ticks;
+//    },
 
-    _ctor$1: function (hours, minutes, seconds) {
-      this._ticks = 10000 * (1000 * (seconds + 60 * (minutes + 60 * hours)));
-    },
+//    _ctor$1: function (hours, minutes, seconds) {
+//      this._ticks = 10000 * (1000 * (seconds + 60 * (minutes + 60 * hours)));
+//    },
 
-    _ctor$2: function (days, hours, minutes, seconds) {
-      this._ticks = 10000 * (1000 * (seconds + 60 * (minutes + 60 * (hours + 24 * days))));
-    },
+//    _ctor$2: function (days, hours, minutes, seconds) {
+//      this._ticks = 10000 * (1000 * (seconds + 60 * (minutes + 60 * (hours + 24 * days))));
+//    },
 
-    _ctor$3: function (days, hours, minutes, seconds, milliseconds) {
-      this._ticks = 10000 * (milliseconds + 1000 * (seconds + 60 * (minutes + 60 * (hours + 24 * days))));
-    },
+//    _ctor$3: function (days, hours, minutes, seconds, milliseconds) {
+//      this._ticks = 10000 * (milliseconds + 1000 * (seconds + 60 * (minutes + 60 * (hours + 24 * days))));
+//    },
 
-    get_Ticks: function () {
-      return this._ticks;
-    },
+//    get_Ticks: function () {
+//      return this._ticks;
+//    },
 
-    get_Milliseconds: function () {
-      return Math.floor(this._ticks / 10000) % 60;
-    },
+//    get_Milliseconds: function () {
+//      return Math.floor(this._ticks / 10000) % 60;
+//    },
 
-    get_Seconds: function () {
-      return Math.floor(this._ticks / 10000000) % 60;
-    },
+//    get_Seconds: function () {
+//      return Math.floor(this._ticks / 10000000) % 60;
+//    },
 
-    get_Minutes: function () {
-      return Math.floor((this._ticks / 10000000) / 60) % 60;
-    },
+//    get_Minutes: function () {
+//      return Math.floor((this._ticks / 10000000) / 60) % 60;
+//    },
 
-    get_Hours: function () {
-      return Math.floor((this._ticks / 10000000) / (60 * 60)) % 24;
-    },
+//    get_Hours: function () {
+//      return Math.floor((this._ticks / 10000000) / (60 * 60)) % 24;
+//    },
 
-    get_Days: function () {
-      return Math.floor((this._ticks / 10000000) / (60 * 60 * 24));
-    },
+//    get_Days: function () {
+//      return Math.floor((this._ticks / 10000000) / (60 * 60 * 24));
+//    },
 
-    get_TotalMilliseconds: function () {
-      return this._ticks / 10000;
-    },
+//    get_TotalMilliseconds: function () {
+//      return this._ticks / 10000;
+//    },
 
-    get_TotalSeconds: function () {
-      return this._ticks / 10000000;
-    },
+//    get_TotalSeconds: function () {
+//      return this._ticks / 10000000;
+//    },
 
-    get_TotalMinutes: function () {
-      return this._ticks / 600000000;
-    }
-  }
-);
+//    get_TotalMinutes: function () {
+//      return this._ticks / 600000000;
+//    }
+//  }
+//);
 
-JSIL.MakeClass("System.Object", "System.Collections.Generic.Dictionary`2", true, ["TKey", "TValue"]);
+//JSIL.MakeClass("System.Object", "System.Collections.Generic.Dictionary`2", true, ["TKey", "TValue"]);
 
-JSIL.ImplementExternals(
-  "System.Collections.Generic.Dictionary`2", true, {
-    _ctor$0: function () {
-      this._dict = {};
-    },
-    _ctor$1: function (count) {
-      this._dict = {};
-    },
-    get_Item: function (key) {
-      return this._dict[String(key)];
-    },
-    set_Item: function (key, value) {
-      this._dict[String(key)] = value;
-    },
-    ContainsKey: function (key) {
-      return this._dict.hasOwnProperty(key);
-    }
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.Collections.Generic.Dictionary`2", true, {
+//    _ctor$0: function () {
+//      this._dict = {};
+//    },
+//    _ctor$1: function (count) {
+//      this._dict = {};
+//    },
+//    get_Item: function (key) {
+//      return this._dict[String(key)];
+//    },
+//    set_Item: function (key, value) {
+//      this._dict[String(key)] = value;
+//    },
+//    ContainsKey: function (key) {
+//      return this._dict.hasOwnProperty(key);
+//    }
+//  }
+//);
 
-JSIL.MakeStaticClass("System.Linq.Enumerable", true, [], function ($) {
-  JSIL.ExternalMembers($, false, 
-    "Count$b1$0"
-  );
-});
+//JSIL.MakeStaticClass("System.Linq.Enumerable", true, [], function ($) {
+//  JSIL.ExternalMembers($, false, 
+//    "Count$b1$0"
+//  );
+//});
 
-JSIL.ImplementExternals(
-  "System.Linq.Enumerable", false, {
-    Count$b1$0: JSIL.GenericMethod(
-      ["T"], 
-      function (T, enumerable) {
-        var e = enumerable.IEnumerable$b1_GetEnumerator();
-        var result = 0;
-        try {
-          while (e.MoveNext())
-            result += 1;
-        } finally {
-          e.IDisposable_Dispose();
-        }
-        return result;
-      }
-    )
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.Linq.Enumerable", false, {
+//    Count$b1$0: JSIL.GenericMethod(
+//      ["T"], 
+//      function (T, enumerable) {
+//        var e = enumerable.IEnumerable$b1_GetEnumerator();
+//        var result = 0;
+//        try {
+//          while (e.MoveNext())
+//            result += 1;
+//        } finally {
+//          e.IDisposable_Dispose();
+//        }
+//        return result;
+//      }
+//    )
+//  }
+//);
 
-JSIL.MakeStaticClass("System.Nullable", true, [], function ($) {
-  JSIL.ExternalMembers($, false, 
-    "GetUnderlyingType"
-  );
-});
+//JSIL.MakeStaticClass("System.Nullable", true, [], function ($) {
+//  JSIL.ExternalMembers($, false, 
+//    "GetUnderlyingType"
+//  );
+//});
 
-JSIL.ImplementExternals(
-  "System.Nullable", false, {
-    GetUnderlyingType: function (nullableType) {   
-      if (JSIL.GetTypeName(nullableType).indexOf("System.Nullable`1") !== 0) {
-        return null;
-      } else {
-        return nullableType.T;
-      }
-    }
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.Nullable", false, {
+//    GetUnderlyingType: function (nullableType) {   
+//      if (JSIL.GetTypeName(nullableType).indexOf("System.Nullable`1") !== 0) {
+//        return null;
+//      } else {
+//        return nullableType.T;
+//      }
+//    }
+//  }
+//);
 
-JSIL.MakeStruct("System.ValueType", "System.Nullable`1", true, ["T"], function ($) {
-});
+//JSIL.MakeStruct("System.ValueType", "System.Nullable`1", true, ["T"], function ($) {
+//});

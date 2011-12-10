@@ -10,6 +10,8 @@ namespace CorlibTest
             double one = Math.Cos(0);
 
             Console.WriteLine((one + 5).ToString());
+
+            Console.WriteLine(new DateTime(2011, 12, 10));
         }
     }
 }
