@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxies.3.5", "Proxies\Prox
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxies.4.0", "Proxies\Proxies.4.0.csproj", "{12DBCC9A-50FE-43B1-BAD1-8029D4AD60C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxies.Corlib", "Proxies\Proxies.Corlib\Proxies.Corlib.csproj", "{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -226,6 +228,16 @@ Global
 		{12DBCC9A-50FE-43B1-BAD1-8029D4AD60C9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{12DBCC9A-50FE-43B1-BAD1-8029D4AD60C9}.Release|x86.ActiveCfg = Release|Any CPU
 		{12DBCC9A-50FE-43B1-BAD1-8029D4AD60C9}.Release|x86.Build.0 = Release|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{73275237-4E9C-42B4-9D0F-3CD9C61ADE3D}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

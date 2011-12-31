@@ -13,7 +13,12 @@ namespace System
 
         public String(char c, int count)
         {
-            
+            Verbatim.Expression(@"
+                var s = """";
+                for (var i=0; i<count; i++)
+                    s += c;
+                return s;
+            ");
         }
 
         public String(char[] chars): this(chars, 0, chars.Length)
@@ -24,7 +29,7 @@ namespace System
         {
             Verbatim.Expression(@"
                 var arr = chars.slice(startIndex, length);
-                return arr.join("""");
+                this._s = arr.join("""");
             ");
         }
 
@@ -102,6 +107,7 @@ namespace System
         }
 
         [IndexerName("Chars")]
+        [JSReplacement("$this.substr($idx,1)")]
         public char this[int idx]
         {
             get
@@ -112,15 +118,19 @@ namespace System
 
         public override string ToString()
         {
+            Verbatim.Expression(@"
+                if (typeof(this._s) !== ""undefined"")
+                    return this._s;
+            ");
             return this;
         }
 
         [JSReplacement("JSIL.StringFormat.apply($format, $p)")]
         public extern static string Format(string format, int p);
 
+        [JSReplacement("$this.substr(0, $index) + String.fromCharCode($value) + $this.substr($index + 1)")]
         internal void InternalSetChar(int index, char value)
         {
-            Verbatim.Expression("this.substr(0,index) + chr + this.substr(index+1)");
         }
 
         public static readonly string Empty = "";
@@ -132,7 +142,7 @@ namespace System
 
         internal static string InternalAllocateStr(int length)
         {
-            return new String(new char[length]);
+            return "";
         }
 
         internal static string CharCopyJoin(string dest, int targetIndex, string source, int startIndex, int length)

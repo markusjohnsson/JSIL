@@ -140,132 +140,132 @@ JSIL.MakeClass("System.Exception", "System.InvalidOperationException", true);
 //  );
 //});
 
-//JSIL.ImplementExternals(
-//  "System.Console", false, {
-//    WriteLine: function () {
-//      JSIL.Host.logWriteLine(System.String.Format.apply(null, arguments));
-//    },
-//    Write: function () {
-//      JSIL.Host.logWrite(System.String.Format.apply(null, arguments));
-//    }
-//  }
-//);
+JSIL.ImplementExternals(
+  "System.Console", false, {
+    WriteLine: function () {
+      JSIL.Host.logWriteLine(System.String.Format.apply(null, arguments));
+    },
+    Write: function () {
+      JSIL.Host.logWrite(System.String.Format.apply(null, arguments));
+    }
+  }
+);
 
-//String.prototype.Split = function (separators) {
-//  if (separators.length > 1)
-//    throw new Error("Split cannot handle more than one separator");
+String.prototype.Split = function (separators) {
+  if (separators.length > 1)
+    throw new Error("Split cannot handle more than one separator");
 
-//  return this.split(separators[0]);
-//};
+  return this.split(separators[0]);
+};
 
-//JSIL.MakeClass("System.Object", "System.String", true, [], function ($) {
-//  $.__IsNativeType__ = true;
+JSIL.MakeClass("System.Object", "System.String", true, [], function ($) {
+  $.__IsNativeType__ = true;
 
-//  JSIL.ExternalMembers($, false, 
-//    "Concat", "Format"
-//  );
-//  JSIL.ExternalMembers($, true,
-//    "_ctor", "_ctor$0", "_ctor$1", "_ctor$2"
-//  );
-//});
+  JSIL.ExternalMembers($, false, 
+    "Concat", "Format"
+  );
+  JSIL.ExternalMembers($, true,
+    "_ctor", "_ctor$0", "_ctor$1", "_ctor$2"
+  );
+});
 
-//JSIL.ImplementExternals(
-//  "System.String", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "string") || (
-//        (typeof (value.text) === "string") && (value.__proto__ === prototype)
-//      );
-//    },
-//    Concat: function (firstValue) {
-//      if (JSIL.IsArray(firstValue) && arguments.length == 1) {
-//        return JSIL.ConcatString.apply(null, firstValue);
-//      } else {
-//        return JSIL.ConcatString(Array.prototype.slice.call(arguments));
-//      }
-//    },
-//    Format: function (format) {
-//      format = String(format);
+JSIL.ImplementExternals(
+  "System.String", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "string") || (
+        (typeof (value.text) === "string") && (value.__proto__ === prototype)
+      );
+    },
+    Concat: function (firstValue) {
+      if (JSIL.IsArray(firstValue) && arguments.length == 1) {
+        return JSIL.ConcatString.apply(null, firstValue);
+      } else {
+        return JSIL.ConcatString(Array.prototype.slice.call(arguments));
+      }
+    },
+    Format: function (format) {
+      format = String(format);
 
-//      var regex = new RegExp("{([0-9]*)(?::([^}]*))?}", "g");
-//      var match = null;
+      var regex = new RegExp("{([0-9]*)(?::([^}]*))?}", "g");
+      var match = null;
 
-//      var values = Array.prototype.slice.call(arguments, 1);
+      var values = Array.prototype.slice.call(arguments, 1);
 
-//      if ((values.length == 1) && JSIL.IsArray(values[0]))
-//        values = values[0];
+      if ((values.length == 1) && JSIL.IsArray(values[0]))
+        values = values[0];
 
-//      var matcher = function (match, index, valueFormat, offset, str) {
-//        index = parseInt(index);
+      var matcher = function (match, index, valueFormat, offset, str) {
+        index = parseInt(index);
 
-//        var value = values[index];
+        var value = values[index];
 
-//        if (valueFormat) {
+        if (valueFormat) {
 
-//          switch (valueFormat[0]) {
-//            case 'f':
-//            case 'F':
-//              var digits = parseInt(valueFormat.substr(1));
-//              return parseFloat(value).toFixed(digits);
+          switch (valueFormat[0]) {
+            case 'f':
+            case 'F':
+              var digits = parseInt(valueFormat.substr(1));
+              return parseFloat(value).toFixed(digits);
 
-//            default:
-//              throw new Error("Unsupported format string: " + valueFormat);
-//          }
-//        } else {
+            default:
+              throw new Error("Unsupported format string: " + valueFormat);
+          }
+        } else {
 
-//          if (typeof (value) === "boolean") {
-//            if (value)
-//              return "True";
-//            else
-//              return "False";
-//          } else {
-//            return String(value);
-//          }
-//        }
-//      };
+          if (typeof (value) === "boolean") {
+            if (value)
+              return "True";
+            else
+              return "False";
+          } else {
+            return String(value);
+          }
+        }
+      };
 
-//      return format.replace(regex, matcher);
-//    }
-//  }
-//);
+      return format.replace(regex, matcher);
+    }
+  }
+);
 
-//JSIL.ImplementExternals(
-//  "System.String", true, {
-//    _ctor: function (text) {
-//      if (typeof (text) === "string")
-//        return text;
-//      else
-//        return String(text);
-//    },
-//    _ctor$0: function (chars, startIndex, length) {
-//      var arr = chars.slice(startIndex, length);
-//      return arr.join("");
-//    },
-//    _ctor$1: function (chars) {
-//      return _ctor$0.call(this, chars, 0, chars.length);
-//    },
-//    _ctor$2: function (ch, length) {
-//      var arr = new Array(length);
-//      for (var i = 0; i < length; i++)
-//        arr[i] = ch;
-//      return arr.join("");
-//    }
-//  }
-//);
+JSIL.ImplementExternals(
+  "System.String", true, {
+    _ctor: function (text) {
+      if (typeof (text) === "string")
+        return text;
+      else
+        return String(text);
+    },
+    _ctor$0: function (chars, startIndex, length) {
+      var arr = chars.slice(startIndex, length);
+      return arr.join("");
+    },
+    _ctor$1: function (chars) {
+      return _ctor$0.call(this, chars, 0, chars.length);
+    },
+    _ctor$2: function (ch, length) {
+      var arr = new Array(length);
+      for (var i = 0; i < length; i++)
+        arr[i] = ch;
+      return arr.join("");
+    }
+  }
+);
 
-//JSIL.ConcatString = function (/* ...values */) {
-//  var result = String(arguments[0]);
+JSIL.ConcatString = function (/* ...values */) {
+  var result = String(arguments[0]);
 
-//  for (var i = 1, l = arguments.length; i < l; i++) {
-//    var arg = arguments[i];
-//    if (typeof (arg) === "string")
-//      result += arg;
-//    else
-//      result += String(arg);
-//  }
+  for (var i = 1, l = arguments.length; i < l; i++) {
+    var arg = arguments[i];
+    if (typeof (arg) === "string")
+      result += arg;
+    else
+      result += String(arg);
+  }
 
-//  return result;
-//};
-//System.String.Empty = '';
+  return result;
+};
+System.String.Empty = '';
 
 //JSIL.MakeClass("System.Object", "JSIL.ArrayEnumerator", true, [], function ($) {
 //  $.prototype._ctor = function (array) {

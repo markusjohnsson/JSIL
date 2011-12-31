@@ -1,6 +1,7 @@
 ﻿
 using JSIL.Meta;
 using JSIL;
+using JSIL.Proxy;
 
 namespace System
 {
@@ -17,8 +18,14 @@ namespace System
         [JSIsPure]
         public extern virtual bool Equals(object obj);
 
-        [JSChangeName("toString")]
-        [JSExternal]
+        //[JSChangeName("toString")]
+        //[JSExternal]
+        //public extern virtual string ToString();
+
+
+        //[JSChangeName("toString")]
+        //[JSNeverReplace]
+        //[JSRuntimeDispatch]
         public extern virtual string ToString();
 
         [JSExternal]
