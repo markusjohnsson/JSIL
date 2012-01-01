@@ -6,11 +6,20 @@ namespace JSIL.Transforms
 {
     public class EmulateInt64 : JSAstVisitor
     {
-        public readonly TypeSystem TypeSystem;
+        private readonly TypeSystem TypeSystem;
+
+        public readonly JSAstBuilder googMathLong;
+        public readonly JSExpression fromString;
+        public readonly JSExpression fromNumber;
+        public readonly JSExpression fromInt;
 
         public EmulateInt64(TypeSystem typeSystem)
         {
             TypeSystem = typeSystem;
+            googMathLong = JSAstBuilder.StringIdentifier("goog").Dot("math").Dot("Long");
+            fromString = googMathLong.FakeMethod("fromString", TypeSystem.Int64, TypeSystem.String).GetExpression();
+            fromNumber = googMathLong.FakeMethod("fromNumber", TypeSystem.Int64, TypeSystem.Double).GetExpression();
+            fromInt = googMathLong.FakeMethod("fromInt", TypeSystem.Int64, TypeSystem.Double).GetExpression();
         }
 
         public void VisitNode(JSIntegerLiteral literal)
@@ -24,17 +33,12 @@ namespace JSIL.Transforms
                 {
                     // TODO: use constructor instead of fromString
 
-                    expression = JSInvocationExpression
-                        .InvokeStatic(
-                            new JSFakeMethod("goog.math.Long.fromString", TypeSystem.Int64, TypeSystem.Int64),
-                            new[] { new JSStringLiteral(literal.Value.ToString()) });
+                    expression = JSInvocationExpression.InvokeStatic(fromString,
+                        new[] { new JSStringLiteral(literal.Value.ToString()) });
                 }
                 else
                 {
-                    expression = JSInvocationExpression
-                        .InvokeStatic(
-                            new JSFakeMethod("goog.math.Long.fromInt", TypeSystem.Int64, TypeSystem.Int64),
-                            new[] { literal });
+                    expression = JSInvocationExpression.InvokeStatic(fromInt, new[] { literal });
                 }
 
                 ParentNode.ReplaceChild(literal, expression);
@@ -46,13 +50,23 @@ namespace JSIL.Transforms
             var leftType = boe.Left.GetExpectedType(TypeSystem);
             var rightType = boe.Right.GetExpectedType(TypeSystem);
 
-            if (boe.GetExpectedType(TypeSystem) == TypeSystem.Int64 &&
+            TypeReference type;
+
+            try
+            {
+                // GetExpectedType can throw NoExpectedTypeException
+                // Shouldn't it return null or something like a NoType instead?
+                type = boe.GetExpectedType(TypeSystem);
+            }
+            catch (NoExpectedTypeException)
+            {
+                type = null;
+            }
+
+            if (type == TypeSystem.Int64 &&
                 leftType != TypeSystem.Int64 && rightType != TypeSystem.Int64)
             {
-                var replacement = JSInvocationExpression
-                    .InvokeStatic(
-                        new JSFakeMethod("goog.math.Long.fromNumber", TypeSystem.Int64, TypeSystem.Double),
-                        new[] { boe });
+                var replacement = JSInvocationExpression.InvokeStatic(fromNumber, new[] { boe });
 
                 ParentNode.ReplaceChild(boe, replacement);
                 VisitChildren(boe);
@@ -74,7 +88,7 @@ namespace JSIL.Transforms
                             new JSFakeMethod(verb, TypeSystem.Int64, TypeSystem.Int64, TypeSystem.Int64),
                             left, new[] { right });
 
-                    if (boe.GetExpectedType(TypeSystem) == TypeSystem.Int32)
+                    if (type == TypeSystem.Int32)
                     {
                         invoke = JSInvocationExpression
                             .InvokeMethod(
@@ -109,7 +123,7 @@ namespace JSIL.Transforms
             {
                 return JSInvocationExpression
                     .InvokeStatic(
-                        new JSFakeMethod("goog.math.Long.fromInt", TypeSystem.Int64, type),
+                        googMathLong.FakeMethod("fromInt", TypeSystem.Int64, type).GetExpression(),
                         new[] { expression });
             }
 
@@ -117,7 +131,7 @@ namespace JSIL.Transforms
             {
                 return JSInvocationExpression
                     .InvokeStatic(
-                        new JSFakeMethod("goog.math.Long.fromNumber", TypeSystem.Int64, type),
+                        googMathLong.FakeMethod("fromNumber", TypeSystem.Int64, type).GetExpression(),
                         new[] { expression });
             }
 
