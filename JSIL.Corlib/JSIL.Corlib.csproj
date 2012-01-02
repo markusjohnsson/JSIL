@@ -174,6 +174,9 @@
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\GregorianCalendarTypes.cs">
       <Link>System.Globalization\GregorianCalendarTypes.cs</Link>
     </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\NumberStyles.cs">
+      <Link>System.Globalization\NumberStyles.cs</Link>
+    </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Reflection\AmbiguousMatchException.cs">
       <Link>System.Reflection\AmbiguousMatchException.cs</Link>
     </Compile>

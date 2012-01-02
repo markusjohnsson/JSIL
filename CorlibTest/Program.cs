@@ -11,31 +11,13 @@ namespace CorlibTest
     {
         public static void Main()
         {
-            //var sb = new StringBuilder();
-            //sb.Append("foo");
-            //sb.Append(123.ToString());
-            //var x = sb.ToString();
-            //Verbatim.Expression("alert(x)");
-            //Console.WriteLine(x);
-            //Console.WriteLine(x);
-
-            /*
-            string foo = "foo";
-            string bar = "bar";
-
-            //Console.WriteLine(foo.StartsWith("f"));
-            Console.WriteLine(foo.Length);
-            Console.WriteLine(foo + bar);
-
-            double one = Math.Cos(0);
-
-            Console.WriteLine((one + 5).ToString());
-            */
-
-            var x = new DateTime(2011, 12, 5, 9, 41, 30).ToString();
+            var x = new DateTime(2012, 1, 1, 0, 0, 0);
+            var y = x + TimeSpan.FromDays(40);
             Console.WriteLine(x);
             Console.WriteLine(x);
-            Verbatim.Expression("alert(x)");
+            Console.WriteLine(y);
+            Console.WriteLine(y);
+            Verbatim.Expression("alert(y)");
         }
     }
 }

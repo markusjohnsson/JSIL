@@ -25,9 +25,12 @@ namespace System
         [JSReplacement("Math.abs($value)")]
         public extern static int Abs(int value);
 
-        [JSReplacement("Math.abs($value)")]
+        [JSReplacement("$value.compare(goog.math.Long.ZERO) >= 0 ? $value : $value.neg()")]
         public extern static long Abs(long value);
-        
+
+        [JSReplacement("$value < 0 ? -1 : $value > 0 ? 1 : 0")]
+        public extern static int Sign(double value);
+
         [JSReplacement("Math.abs($value)")]
         public extern static float Abs(float value);
 
