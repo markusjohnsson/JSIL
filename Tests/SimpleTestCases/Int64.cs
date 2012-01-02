@@ -45,6 +45,16 @@ public class Program
         // conversion
         Console.WriteLine(((long)Math.Round(40.1d)) * x);
 
+        // comparison
+        WriteBool(x == y);
+        WriteBool(x == x);
+        WriteBool(x != y);
+        WriteBool(x != x);
+        WriteBool(x < y);
+        WriteBool(x <= x);
+        WriteBool(x > y);
+        WriteBool(x >= x);
+
         //Console.WriteLine(-x);
         Console.WriteLine(x);
         Console.WriteLine(y);
@@ -79,6 +89,12 @@ public class Program
         Console.WriteLine(1 + (int)(n / m));
 
         Console.WriteLine(div(123, 333));
+    }
+
+    public static void WriteBool(bool b)
+    {
+        // System.Bool.ToString() is lower-case in JS
+        Console.WriteLine(b ? "True" : "False");
     }
 
     public static int div(int x, int y)
