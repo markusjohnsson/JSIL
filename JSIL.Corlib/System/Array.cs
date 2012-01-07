@@ -165,9 +165,33 @@ namespace System
             throw new NotImplementedException();
         }
 
-        internal static void Resize<T>(ref T[] array, int value)
+        internal static void Resize<T>(ref T[] array, int newSize)
         {
-            throw new NotImplementedException();
+            if (newSize < 0)
+                throw new ArgumentOutOfRangeException();
+
+            if (array == null)
+            {
+                array = new T[newSize];
+                return;
+            }
+
+            int length = array.Length;
+            if (length == newSize)
+                return;
+
+            T[] a = new T[newSize];
+            if (length != 0)
+                FastCopy(array, 0, a, 0, Math.Min(newSize, length));
+            array = a; 
+        }
+
+        private static void FastCopy<T>(T[] array, int p, T[] a, int p_2, int p_3)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                a[i] = array[i];
+            }
         }
 
         public int GetLowerBound(int p)

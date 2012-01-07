@@ -14,13 +14,11 @@ namespace System
             return first < second ? first : second;
         }
 
-        [JSRuntimeDispatch]
-        [JSExternal]
-        public extern static AnyType Max(params AnyType[] arguments);
+        [JSReplacement("Math.max($a, $b)")]
+        public extern static int Max(int a, int b);
 
-        [JSRuntimeDispatch]
-        [JSExternal]
-        public extern static int Max(params int[] arguments);
+        [JSReplacement("Math.max($a, $b)")]
+        public extern static double Max(double a, double b);
 
         [JSReplacement("Math.abs($value)")]
         public extern static int Abs(int value);
