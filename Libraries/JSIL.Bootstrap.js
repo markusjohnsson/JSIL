@@ -503,116 +503,116 @@ System.Threading.Monitor.Exit = function (obj) {
 //  );
 //});
 
-//JSIL.ImplementExternals(
-//  "System.Boolean", false, {
-//    CheckType: function (value) {
-//      return (value === false) || (value === true);
-//    }
-//  }
-//);
-//JSIL.MakeNumericType(Boolean, "System.Boolean", true);
+JSIL.ImplementExternals(
+  "System.Boolean", false, {
+    CheckType: function (value) {
+      return (value === false) || (value === true);
+    }
+  }
+);
+JSIL.MakeNumericType(Boolean, "System.Boolean", true);
 
-//JSIL.ImplementExternals(
-//  "System.Char", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "string") && (value.length == 1);
-//    }
-//  }
-//);
-//JSIL.MakeNumericType(String, "System.Char", true);
+JSIL.ImplementExternals(
+  "System.Char", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "string") && (value.length == 1);
+    }
+  }
+);
+JSIL.MakeNumericType(String, "System.Char", true);
 
-//JSIL.ImplementExternals(
-//  "System.Byte", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number") && (value >= 0) && (value <= 255);
-//    }
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.Byte", true);
+JSIL.ImplementExternals(
+  "System.Byte", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number") && (value >= 0) && (value <= 255);
+    }
+  }
+);
+JSIL.MakeNumericType(Number, "System.Byte", true);
 
-//JSIL.ImplementExternals(
-//  "System.UInt16", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number") && (value >= 0);
-//    },
+JSIL.ImplementExternals(
+  "System.UInt16", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number") && (value >= 0);
+    },
 //    Parse: function (text) {
 //      return Math.abs(parseInt(text, 10));
 //    }
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.UInt16", true);
+  }
+);
+JSIL.MakeNumericType(Number, "System.UInt16", true);
 //System.UInt16.MaxValue = 65535;
 
-//JSIL.ImplementExternals(
-//  "System.Int16", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number");
-//    },
+JSIL.ImplementExternals(
+  "System.Int16", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number");
+    },
 //    Parse: function (text) {
 //      return Math.abs(parseInt(text, 10));
 //    }
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.Int16", true);
+  }
+);
+JSIL.MakeNumericType(Number, "System.Int16", true);
 //System.Int16.MaxValue = 32767;
 
-//JSIL.ImplementExternals(
-//  "System.UInt32", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number") && (value >= 0);
-//    },
+JSIL.ImplementExternals(
+  "System.UInt32", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number") && (value >= 0);
+    },
 //    Parse: function (text) {
 //      return Math.abs(parseInt(text, 10));
 //    }
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.UInt32", true);
+  }
+);
+JSIL.MakeNumericType(Number, "System.UInt32", true);
 //System.UInt32.MaxValue = 4294967295;
 
-//JSIL.ImplementExternals(
-//  "System.Int32", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number");
-//    },
+JSIL.ImplementExternals(
+  "System.Int32", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number");
+    },
 //    Parse: function (text) {
 //      return parseInt(text, 10);
 //    }
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.Int32", true);
+  }
+);
+JSIL.MakeNumericType(Number, "System.Int32", true);
 //System.Int32.MaxValue = 2147483647;
 
-//JSIL.ImplementExternals(
-//  "System.Int64", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number");
-//    },
+JSIL.ImplementExternals(
+  "System.Int64", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number");
+    },
 //    Parse: function (text) {
 //      return parseInt(text, 10);
 //    }
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.Int64", true);
+  }
+);
+JSIL.MakeNumericType(Number, "System.Int64", true);
 
-//JSIL.ImplementExternals(
-//  "System.Single", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number");
-//    },
-//    IsNaN: isNaN
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.Single", false);
+JSIL.ImplementExternals(
+  "System.Single", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number");
+    },
+    IsNaN: isNaN
+  }
+);
+JSIL.MakeNumericType(Number, "System.Single", false);
 
-//JSIL.ImplementExternals(
-//  "System.Double", false, {
-//    CheckType: function (value) {
-//      return (typeof (value) === "number");
-//    },
-//    IsNaN: isNaN
-//  }
-//);
-//JSIL.MakeNumericType(Number, "System.Double", false);
+JSIL.ImplementExternals(
+  "System.Double", false, {
+    CheckType: function (value) {
+      return (typeof (value) === "number");
+    },
+    IsNaN: isNaN
+  }
+);
+JSIL.MakeNumericType(Number, "System.Double", false);
 
 //JSIL.MakeStruct("System.ValueType", "System.Decimal", true);
 //System.Decimal.CheckType = function (value) {
