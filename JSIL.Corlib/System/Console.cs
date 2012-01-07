@@ -1,14 +1,28 @@
 ﻿
 
+using JSIL.Meta;
+using JSIL.Proxy;
+
 namespace System
 {
     public class Console
     {
-        public extern static void WriteLine(string line);
-        public static void WriteLine(object o)
+        [JSRuntimeDispatch]
+        [JSExternal]
+        [JSMutatedArguments()]
+        [JSEscapingArguments()]
+        public static void WriteLine(params object[] arguments)
         {
-            WriteLine(o.ToString());
+            throw new InvalidOperationException();
         }
 
+        [JSRuntimeDispatch]
+        [JSExternal]
+        [JSMutatedArguments()]
+        [JSEscapingArguments()]
+        public static void Write(params object[] arguments)
+        {
+            throw new InvalidOperationException();
+        }
     }
 }
