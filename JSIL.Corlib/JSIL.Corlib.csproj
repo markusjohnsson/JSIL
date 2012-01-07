@@ -162,6 +162,15 @@
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\CalendarWeekRule.cs">
       <Link>System.Globalization\CalendarWeekRule.cs</Link>
     </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\CompareInfo.cs">
+      <Link>System.Globalization\CompareInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\CompareOptions.cs">
+      <Link>System.Globalization\CompareOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\CultureInfo.cs">
+      <Link>System.Globalization\CultureInfo.cs</Link>
+    </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\DateTimeFormatInfo.cs">
       <Link>System.Globalization\DateTimeFormatInfo.cs</Link>
     </Compile>
@@ -174,8 +183,17 @@
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\GregorianCalendarTypes.cs">
       <Link>System.Globalization\GregorianCalendarTypes.cs</Link>
     </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\NumberFormatInfo.cs">
+      <Link>System.Globalization\NumberFormatInfo.cs</Link>
+    </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\NumberStyles.cs">
       <Link>System.Globalization\NumberStyles.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\SortKey.cs">
+      <Link>System.Globalization\SortKey.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Globalization\TextInfo.cs">
+      <Link>System.Globalization\TextInfo.cs</Link>
     </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Reflection\AmbiguousMatchException.cs">
       <Link>System.Reflection\AmbiguousMatchException.cs</Link>
@@ -339,6 +357,9 @@
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System\IndexOutOfRangeException.cs">
       <Link>System\IndexOutOfRangeException.cs</Link>
     </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\Int32.cs">
+      <Link>System\Int32.cs</Link>
+    </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System\InvalidCastException.cs">
       <Link>System\InvalidCastException.cs</Link>
     </Compile>
@@ -359,6 +380,12 @@
     </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System\NullReferenceException.cs">
       <Link>System\NullReferenceException.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\NumberFormatter.cs">
+      <Link>System\NumberFormatter.cs</Link>
+    </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System\NumberFormatter.jvm.cs">
+      <Link>System\NumberFormatter.jvm.cs</Link>
     </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System\ObjectDisposedException.cs">
       <Link>System\ObjectDisposedException.cs</Link>
@@ -393,6 +420,7 @@
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System\TypeCode.cs">
       <Link>System\TypeCode.cs</Link>
     </Compile>
+    <Compile Include="Mono.Globalization.Unicode\SimpleCollator.cs" />
     <Compile Include="JSIL.Security\BitConverterLE.cs" />
     <Compile Include="MonoTODOAttribute.cs" />
     <Compile Include="System.Diagnostics\DebuggerBrowsableAttribute.cs" />
@@ -407,6 +435,7 @@
     <Compile Include="System.Security.Cryptography\RandomNumberGenerator.cs" />
     <Compile Include="System\Activator.cs" />
     <Compile Include="System\Array.cs" />
+    <Compile Include="System\BitConverter.cs" />
     <Compile Include="System\Boolean.cs" />
     <Compile Include="System\Byte.cs" />
     <Compile Include="System\Char.cs" />
@@ -421,7 +450,6 @@
     <Compile Include="System\Exception.cs" />
     <Compile Include="System\Flags.cs" />
     <Compile Include="System\Int16.cs" />
-    <Compile Include="System\Int32.cs" />
     <Compile Include="System\Int64.cs" />
     <Compile Include="System\IntPtr.cs" />
     <Compile Include="System\Locale.cs" />
@@ -451,6 +479,7 @@
     <Compile Include="System.Threading\Interlocked.cs" />
     <Compile Include="System.Threading\Monitor.cs" />
     <Compile Include="System.Threading\Thread.cs" />
+    <Compile Include="System\ThreadStaticAttribute.cs" />
     <Compile Include="System\Type.cs" />
     <Compile Include="System\UInt16.cs" />
     <Compile Include="System\UInt32.cs" />

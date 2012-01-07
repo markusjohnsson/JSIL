@@ -11,30 +11,70 @@ namespace System
         {
         }
 
-        public String(char c, int count)
-        {
-            Verbatim.Expression(@"
-                var s = """";
-                for (var i=0; i<count; i++)
-                    s += c;
-                return s;
-            ");
-        }
-
-        public String(char[] chars): this(chars, 0, chars.Length)
-        {
-        }
-
-        public String(char[] chars, int startIndex, int length)
-        {
-            Verbatim.Expression(@"
-                var arr = chars.slice(startIndex, length);
-                this._s = arr.join("""");
-            ");
-        }
+        [JSExternal]
+        public extern String(char[] chars);
+        
+        [JSExternal]
+        public extern String(char[] chars, int startIndex, int length);
 
         [JSReplacement("$this.indexOf(p)")]
         public extern int IndexOf(char p);
+
+        [JSReplacement("$startIndex + $this.substr($startIndex, $count).indexOf($value)")]
+        public extern int IndexOf(string value, int startIndex, int count);
+
+        // Following methods are culture-insensitive
+		public int IndexOfAny (char [] anyOf)
+		{
+			if (anyOf == null)
+				throw new ArgumentNullException ();
+            if (this.Length == 0)
+				return -1;
+
+            return IndexOfAnyUnchecked(anyOf, 0, this.Length);
+		}
+
+		public int IndexOfAny (char [] anyOf, int startIndex)
+		{
+			if (anyOf == null)
+				throw new ArgumentNullException ();
+            if (startIndex < 0 || startIndex > this.Length)
+				throw new ArgumentOutOfRangeException ();
+
+            return IndexOfAnyUnchecked(anyOf, startIndex, this.Length - startIndex);
+		}
+
+		public int IndexOfAny (char [] anyOf, int startIndex, int count)
+		{
+			if (anyOf == null)
+				throw new ArgumentNullException ();
+            if (startIndex < 0 || startIndex > this.Length)
+				throw new ArgumentOutOfRangeException ();
+            if (count < 0 || startIndex > this.Length - count)
+				throw new ArgumentOutOfRangeException ("count", "Count cannot be negative, and startIndex + count must be less than length of the string.");
+
+			return IndexOfAnyUnchecked (anyOf, startIndex, count);
+		}
+
+		private int IndexOfAnyUnchecked (char[] anyOf, int startIndex, int count)
+		{
+            if (anyOf.Length == 0)
+                return -1;
+
+            for (int i = 0; i < Length; i++)
+            {
+                char current = this[i];
+                for (int j = 0; j < anyOf.Length; j++)
+                {
+                    if (current == anyOf[j])
+                        return i;
+                }
+            }
+
+            return -1;
+		}
+
+
 
         [JSReplacement("($this.indexOf(p) !== -1)")]
         public extern bool Contains(char p);
@@ -270,6 +310,11 @@ namespace System
                 pos += change;
             }
             return pos;
+        }
+
+        internal static int Compare(string s, int i, string p, int p_2, int p_3)
+        {
+            throw new NotImplementedException();
         }
     }
 }

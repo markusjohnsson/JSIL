@@ -36,5 +36,18 @@ namespace System
         {
             throw new NotImplementedException();
         }
+
+        internal static bool IsLower(char hexDigit)
+        {
+            return 'a' <= hexDigit && hexDigit <= 'z';
+        }
+
+        internal static char ToUpperInvariant(char c)
+        {
+            if ('a' <= c && c <= 'z')
+                return (char) (c + 'a' - 'A');
+
+            return c;
+        }
     }
 }

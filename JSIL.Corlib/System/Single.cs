@@ -9,5 +9,10 @@ namespace System
         {
             return (bool)Verbatim.Expression("isNaN(value)");
         }
+
+        public static float Parse(string shortRep, Globalization.NumberFormatInfo nfi)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
