@@ -1,0 +1,8 @@
+﻿{
+  "OutputDirectory": "%assemblypath%",
+  "Assemblies": {
+    "Stubbed": [
+      
+    ]
+  }
+}

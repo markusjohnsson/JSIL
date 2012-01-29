@@ -63,20 +63,22 @@ namespace JSIL {
                 Assembly proxyAssembly = null;
                 var proxyPath = Path.GetDirectoryName(Util.GetPathOfAssembly(Assembly.GetExecutingAssembly()));
 
-                proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.Corlib.dll"));
-
-                //if (!configuration.FrameworkVersion.HasValue || configuration.FrameworkVersion == 4.0)
-                //{
-                //    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.4.0.dll"));
-                //}
-                //else if (configuration.FrameworkVersion <= 3.5)
-                //{
-                //    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.3.5.dll"));
-                //}
-                //else
-                //{
-                //    throw new ArgumentOutOfRangeException("FrameworkVersion", "Framework version not supported");
-                //}
+                if (!configuration.FrameworkVersion.HasValue)
+                {
+                    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.Corlib.dll"));
+                }
+                else if (configuration.FrameworkVersion == 4.0)
+                {
+                    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.4.0.dll"));
+                }
+                else if (configuration.FrameworkVersion <= 3.5)
+                {
+                    proxyAssembly = Assembly.LoadFile(Path.Combine(proxyPath, "JSIL.Proxies.3.5.dll"));
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("FrameworkVersion", "Framework version not supported");
+                }
 
                 if (proxyAssembly == null)
                     throw new InvalidOperationException("No core proxy assembly was loaded.");
