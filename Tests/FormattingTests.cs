@@ -44,6 +44,57 @@ namespace JSIL.Tests {
         }
 
         [Test]
+        public void SwitchWithMultipleDefaults () {
+            var generatedJs = GetJavascript(
+                @"TestCases\ComplexSwitch.cs",
+                "zero\r\none\r\ntwo or three\r\ntwo or three"
+            );
+            try {
+                // TODO: The following will only work if switch statements with multiple default cases are collapsed into a single default case.
+
+                /*
+                Assert.IsFalse(generatedJs.Contains("__ = \"IL_"));
+                Assert.IsFalse(generatedJs.Contains("case 1:"));
+                 */
+
+                Assert.IsTrue(generatedJs.Contains("default:"));
+            } catch {
+                Console.WriteLine(generatedJs);
+
+                throw;
+            }
+        }
+
+        [Test]
+        public void BigStringSwitch () {
+            var generatedJs = GetJavascript(
+                @"SpecialTestCases\BigStringSwitch.cs",
+                ""
+            );
+
+            try {
+                Assert.IsFalse(generatedJs.Contains(".TryGetValue"));
+
+                // TODO: The following will only work if optimized switches are fully deoptimized back into a normal switch.
+                // At present this isn't possible because JSIL cannot fully untangle the flow control graph produced by the optimized switch.
+
+                /*
+                Assert.IsFalse(generatedJs.Contains("break "));
+                Assert.IsFalse(generatedJs.Contains("continue "));
+                 */
+                // Assert.IsTrue(generatedJs.Contains("for (var i = 0; i < args.length; ++i)"));
+
+                Assert.IsTrue(generatedJs.Contains("for (var i = 0; i < args.length;"));
+                Assert.IsTrue(generatedJs.Contains("switch (text)"));
+                Assert.IsTrue(generatedJs.Contains("case \"howdy\""));
+            } catch {
+                Console.WriteLine(generatedJs);
+
+                throw;
+            }
+        }
+
+        [Test]
         public void StringConcat () {
             var generatedJs = GetJavascript(
                 @"SpecialTestCases\StringConcat.cs",
@@ -296,11 +347,49 @@ namespace JSIL.Tests {
             );
 
             try {
-                Assert.IsFalse(generatedJs.Contains("for ("));
+                Assert.IsFalse(generatedJs.Contains("for ("), "A for loop failed conversion to a do-loop");
                 Assert.AreEqual(3, generatedJs.Split(new string[] { "do {" }, StringSplitOptions.RemoveEmptyEntries).Length);
                 Assert.AreEqual(3, generatedJs.Split(new string[] { "} while (" }, StringSplitOptions.RemoveEmptyEntries).Length);
                 Assert.IsTrue(generatedJs.Contains("while (true)"));
-                Assert.IsTrue(generatedJs.Contains("break __loop2__"));
+                Assert.IsTrue(generatedJs.Contains("break $loop2"));
+            } catch {
+                Console.WriteLine(generatedJs);
+
+                throw;
+            }
+        }
+
+        [Test]
+        public void UntranslatableGotos () {
+            var generatedJs = GetJavascript(
+                @"TestCases\UntranslatableGotoOutParameters.cs",
+                ": null"
+            );
+
+            try {
+                Assert.IsFalse(generatedJs.Contains("JSIL.UntranslatableInstruction"), "A goto failed translation");
+            } catch {
+                Console.WriteLine(generatedJs);
+
+                throw;
+            }
+        }
+
+        [Test]
+        public void UntranslatableGotos2 () {
+            var generatedJs = GetJavascript(
+                @"TestCases\RepeatIterator.cs",
+                "a\r\na\r\na\r\na\r\na"
+            );
+
+            try {
+                Assert.IsFalse(generatedJs.Contains("JSIL.UntranslatableInstruction"), "A goto failed translation");
+                var m = Regex.Match(
+                    generatedJs,
+                    @"if \(this.i \>\= this.count\) \{[^}]*\} else \{"
+                );
+                Assert.IsTrue((m != null) && m.Success);
+                Assert.IsTrue(m.Value.Contains("continue $labelgroup0;"), "If block true clause left empty when hoisting out label");
             } catch {
                 Console.WriteLine(generatedJs);
 

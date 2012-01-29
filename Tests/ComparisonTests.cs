@@ -21,8 +21,7 @@ namespace JSIL.Tests {
         }
 
         [Test]
-        public void CastingFromNull()
-        {
+        public void CastingFromNull() {
             using (var test = new ComparisonTest(@"TestCases\CastingFromNull.cs"))
                 test.Run();
         }
@@ -109,10 +108,16 @@ namespace JSIL.Tests {
 
         [Test]
         public void Chars () {
-            using (var test = new ComparisonTest(@"TestCases\Chars.cs"))
-                test.Run();
-            using (var test = new ComparisonTest(@"TestCases\CharSwitch.cs"))
-                test.Run();
+            var defaultProvider = MakeDefaultProvider();
+
+            RunComparisonTests(
+                new[] { 
+                    @"TestCases\CharSwitch.cs",
+                    @"TestCases\Chars.cs",
+                    @"TestCases\CharArrayLookup.cs",
+                    @"TestCases\CharArithmetic.cs",
+                }, null, defaultProvider
+            );
         }
 
         [Test]
@@ -135,6 +140,8 @@ namespace JSIL.Tests {
 
             RunComparisonTests(
                 new[] { 
+                    @"TestCases\RefParameters.cs",
+                    @"TestCases\RefParameterInitializedInConditional.cs",
                     @"TestCases\RefStruct.cs",
                     @"TestCases\StructPropertyThis.cs",
                     @"TestCases\RefClass.cs"
@@ -219,9 +226,22 @@ namespace JSIL.Tests {
         }
 
         [Test]
-        public void Switch () {
-            using (var test = new ComparisonTest(@"TestCases\Switch.cs"))
+        public void SwitchStatements () {
+            var defaultProvider = MakeDefaultProvider();
+
+            RunComparisonTests(
+                new[] { 
+                    @"TestCases\Switch.cs",
+                    @"TestCases\ComplexSwitch.cs",
+                    @"TestCases\CharSwitch.cs",
+                    @"TestCases\ContinueInsideSwitch.cs",
+                }, null, defaultProvider
+            );
+
+            using (var test = new ComparisonTest(@"SpecialTestCases\BigStringSwitch.cs")) {
                 test.Run();
+                test.Run("howdy", "hello", "world", "what", "why", "who", "where", "when");
+            }
         }
 
         [Test]

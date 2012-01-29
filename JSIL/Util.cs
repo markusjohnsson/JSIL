@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using ICSharpCode.NRefactory.CSharp;
+using JSIL.Ast;
 using Mono.Cecil;
 
 namespace JSIL.Internal {
@@ -475,6 +476,18 @@ namespace JSIL.Internal {
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator () {
             return Storage.GetEnumerator();
+        }
+    }
+
+    public class ReferenceComparer<T> : IEqualityComparer<T>
+        where T : class {
+
+        public bool Equals (T x, T y) {
+            return x == y;
+        }
+
+        public int GetHashCode (T obj) {
+            return obj.GetHashCode();
         }
     }
 }

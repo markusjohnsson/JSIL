@@ -87,6 +87,11 @@
     <Compile Include="SpecialIdentifiers.cs" />
     <Compile Include="Transforms\EmulateInt64.cs" />
     <Compile Include="AST\JSAstBuilder.cs" />
+    <Compile Include="Transforms\CollapseNulls.cs" />
+    <Compile Include="Transforms\IntroduceCharCasts.cs" />
+    <Compile Include="Transforms\RemoveUnusedLoopNames.cs" />
+    <Compile Include="Transforms\LabelGroupBuilder.cs" />
+    <Compile Include="Transforms\DeoptimizeSwitchStatements.cs" />
     <Compile Include="Transforms\ReplaceMethodCalls.cs" />
     <Compile Include="Transforms\IntroduceEnumCasts.cs" />
     <Compile Include="Transforms\SimplifyLoops.cs" />

@@ -92,7 +92,7 @@ namespace JSIL {
 
         protected virtual ReaderParameters GetReaderParameters (bool useSymbols, string mainAssemblyPath = null) {
             var readerParameters = new ReaderParameters {
-                ReadingMode = ReadingMode.Immediate,
+                ReadingMode = ReadingMode.Deferred,
                 ReadSymbols = useSymbols
             };
 
@@ -1157,17 +1157,24 @@ namespace JSIL {
             SpecialIdentifiers si, HashSet<string> parameterNames,
             Dictionary<string, JSVariable> variables, JSFunctionExpression function
         ) {
-            // Run elimination repeatedly, since eliminating one variable may make it possible to eliminate others
-            if (Configuration.Optimizer.EliminateTemporaries.GetValueOrDefault(true)) {
-                bool eliminated;
-                do {
-                    var visitor = new EliminateSingleUseTemporaries(
-                        si.TypeSystem, variables, FunctionCache
-                    );
-                    visitor.Visit(function);
-                    eliminated = visitor.EliminatedVariables.Count > 0;
-                } while (eliminated);
-            }
+            Action temporaryEliminationPass = () => {
+                if (Configuration.Optimizer.EliminateTemporaries.GetValueOrDefault(true)) {
+                    bool eliminated;
+                    do {
+                        var visitor = new EliminateSingleUseTemporaries(
+                            si.TypeSystem, variables, FunctionCache
+                        );
+                        visitor.Visit(function);
+                        eliminated = visitor.EliminatedVariables.Count > 0;
+                    } while (eliminated);
+                }
+            };
+
+            var la = new LabelAnalyzer();
+            la.Visit(function);
+            la.BuildLabelGroups();
+
+            temporaryEliminationPass();
 
             new EmulateInt64(
                 si.TypeSystem
@@ -1193,10 +1200,10 @@ namespace JSIL {
 
             if (Configuration.Optimizer.SimplifyLoops.GetValueOrDefault(true))
                 new SimplifyLoops(
-                    si.TypeSystem
+                    si.TypeSystem, false
                 ).Visit(function);
 
-            // Temporary elimination makes it possible to simplify more operators, so do it last
+            // Temporary elimination makes it possible to simplify more operators, so do it later
             if (Configuration.Optimizer.SimplifyOperators.GetValueOrDefault(true))
                 new SimplifyOperators(
                     si.JSIL, si.JS, si.TypeSystem
@@ -1206,9 +1213,31 @@ namespace JSIL {
                 si.JSIL, si.JS, si.TypeSystem
             ).Visit(function);
 
+            new IntroduceCharCasts(
+                si.TypeSystem, si.JS
+            ).Visit(function);
+
             new IntroduceEnumCasts(
                 si.TypeSystem
             ).Visit(function);
+
+            var dss = new DeoptimizeSwitchStatements(
+                si.TypeSystem
+            );
+            dss.Visit(function);
+
+            new CollapseNulls().Visit(function);
+
+            if (Configuration.Optimizer.SimplifyLoops.GetValueOrDefault(true))
+                new SimplifyLoops(
+                    si.TypeSystem, true
+                ).Visit(function);
+
+            temporaryEliminationPass();
+
+            var lnd = new LoopNameDetector();
+            lnd.Visit(function);
+            lnd.EliminateUnusedLoopNames();
         }
 
         protected static bool NeedsStaticConstructor (TypeReference type) {

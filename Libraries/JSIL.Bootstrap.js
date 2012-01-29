@@ -151,6 +151,16 @@ JSIL.ImplementExternals(
   }
 );
 
+// Unfortunately, without access to sandboxed natives, we have to extend the actual prototype for String :(
+
+String.prototype.Equals = function (rhs) {
+  if ((typeof (this) === "string") && (typeof (rhs) === "string")) {
+    return this == rhs;
+  } else {
+    return this === rhs;
+  }
+};
+
 String.prototype.Split = function (separators) {
   if (separators.length > 1)
     throw new Error("Split cannot handle more than one separator");
@@ -305,22 +315,39 @@ System.String.Empty = '';
 //  ]);
 //});
 
-JSIL.MakeClass("System.Object", "System.Threading.Thread", true);
-System.Threading.Thread._cctor2 = function () {
-  // This type already has a cctor, so we add a second one.
-  System.Threading.Thread._currentThread = new System.Threading.Thread();
-};
-System.Threading.Thread.prototype._ctor = function () {
-};
-System.Threading.Thread.get_CurrentThread = function () {
-  return System.Threading.Thread._currentThread;
-};
-System.Threading.Thread._currentThread = null;
-System.Threading.Thread.prototype.ManagedThreadId = 0;
-JSIL.MakeProperty(
-  System.Threading.Thread, "CurrentThread", 
-  System.Threading.Thread.get_CurrentThread, null
+JSIL.ImplementExternals(
+  "System.Threading.Thread", true, {
+    _ctor: function () {}
+  }
 );
+
+JSIL.ImplementExternals(
+  "System.Threading.Thread", false, {
+    _cctor2: function () {
+      // This type already has a cctor, so we add a second one.
+      System.Threading.Thread._currentThread = new System.Threading.Thread();
+    },
+    get_CurrentThread: function () {
+      return System.Threading.Thread._currentThread;
+    },
+    get_ManagedThreadId: function () {
+      return 0;
+    }
+  }
+);
+
+JSIL.MakeClass("System.Object", "System.Threading.Thread", true, [], function ($) {
+  $._currentThread = null;
+
+  JSIL.MakeProperty(
+    $, "CurrentThread", 
+    $.get_CurrentThread, null
+  );
+  JSIL.MakeProperty(
+    $, "ManagedThreadId", 
+    $.get_ManagedThreadId, null
+  );
+});
 
 //$jsilcore.$ListExternals = {
 //  _ctor: function (sizeOrInitializer) {

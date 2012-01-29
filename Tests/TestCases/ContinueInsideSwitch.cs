@@ -2,22 +2,19 @@
 
 public static class Program {
     public static void Main (string[] args) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             switch (i) {
                 case 0:
                     Console.WriteLine("zero");
-                    break;
+                    continue;
                 case 1:
                     Console.WriteLine("one");
-                    break;
+                    continue;
                 case 2:
-                case 3:
-                    Console.WriteLine("two or three");
-                    break;
-                default:
-                    Console.WriteLine("four or more");
+                    Console.WriteLine("two");
                     break;
             }
+            Console.WriteLine("nocontinue");
         }
     }
 }
