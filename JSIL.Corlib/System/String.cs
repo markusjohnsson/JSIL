@@ -168,7 +168,7 @@ namespace System
         [JSReplacement("JSIL.StringFormat.apply($format, $p)")]
         public extern static string Format(string format, int p);
 
-        [JSReplacement("($this = $this.substr(0, $index) + String.fromCharCode($value) + $this.substr($index + 1))")]
+        [JSReplacement("($this = $this.substr(0, $index) + $value + $this.substr($index + 1))")]
         internal void InternalSetChar(int index, char value)
         {
         }

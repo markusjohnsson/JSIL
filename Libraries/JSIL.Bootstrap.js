@@ -143,15 +143,25 @@ JSIL.MakeClass("System.Exception", "System.InvalidOperationException", true);
 JSIL.ImplementExternals(
   "System.Console", false, {
     WriteLine: function () {
-      JSIL.Host.logWriteLine(System.String.Format.apply(null, arguments));
+      JSIL.Host.logWriteLine(System.String.Format.apply(null, arguments[0]));
     },
     Write: function () {
-      JSIL.Host.logWrite(System.String.Format.apply(null, arguments));
+      JSIL.Host.logWrite(System.String.Format.apply(null, arguments[0]));
     }
   }
 );
 
 // Unfortunately, without access to sandboxed natives, we have to extend the actual prototype for String :(
+
+String.prototype.GetHashCode = function () {
+  var h = 0;
+  for (var x=0; x<this.length; x ++)
+  {
+    h = (h << 5) - h + this.charCodeAt(x); 
+  }
+  return h;
+//  throw new Error("blah");
+};
 
 String.prototype.Equals = function (rhs) {
   if ((typeof (this) === "string") && (typeof (rhs) === "string")) {
@@ -921,3 +931,53 @@ JSIL.MakeNumericType(Number, "System.Double", false);
 
 //JSIL.MakeStruct("System.ValueType", "System.Nullable`1", true, ["T"], function ($) {
 //});
+
+Number.prototype.GetHashCode = function () {
+    if (Math.abs(this) < 1)
+        return Math.floor(4096 * this);
+    else
+        return Math.floor(this);
+};
+
+JSIL.ImplementExternals(
+  "System.CurrentSystemTimeZone", false, {
+    GetTimeZoneData: function(year, data, names) {
+        var dstStart;
+        var dstEnd;
+
+        var firstDay = new Date(year, 1, 1);
+        var initialOffset = firstDay.getTimezoneOffset();
+        var dayMs = 1000 * 60 * 60 * 24;
+
+        for (var m = 0; m < 365; m++) {
+            var date = new Date(firstDay.getTime() + m * dayMs);
+            var currentOffset = date.getTimezoneOffset();
+
+            if (initialOffset != currentOffset) {
+                if (typeof(dstStart) !== "undefined") {
+                    dstEnd = date;
+                    break;
+                }
+                else {
+                    dstStart = date;
+                    initialOffset = currentOffset;
+                }
+            }
+        }
+
+        var minutesToTicks = goog.math.Long.fromNumber(-10000*1000*60);
+
+        data.value = [
+            JSIL.New(System.DateTime, "_ctor$1", [year, dstStart.getMonth(), dstStart.getDay()]).get_Ticks(),
+            JSIL.New(System.DateTime, "_ctor$1", [year, dstEnd.getMonth(), dstEnd.getDay()]).get_Ticks(),
+            minutesToTicks.multiply(goog.math.Long.fromNumber(firstDay.getTimezoneOffset())),
+            minutesToTicks.multiply(goog.math.Long.fromNumber(dstStart.getTimezoneOffset()))
+        ];
+    
+        var tz = jstz.determine_timezone();
+        names.value = [ tz.name(), tz.name() ];
+    
+        return true;
+    }
+  }
+);
