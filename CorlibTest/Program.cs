@@ -12,7 +12,13 @@ namespace CorlibTest
     {
         public static void Main()
         {
+            Console.WriteLine("Started running tests {0}", DateTime.Now);
+
+
+            DictionaryTests.Run();
             DateTimeTests.Run();
+
+            Console.WriteLine("Done!");
         }
     }
 }

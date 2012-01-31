@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="Assert.cs" />
     <Compile Include="DateTimeTests.cs" />
+    <Compile Include="DictionaryTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -56,6 +57,10 @@
       <Link>JSIL.Core.js</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\Libraries\jstz.js">
+      <Link>jstz.js</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\Libraries\long.js">
       <Link>long.js</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -68,6 +73,9 @@
     <None Include="defaults.jsilconfig">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

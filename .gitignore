@@ -35,3 +35,5 @@ Tests/*Cases/*.js
 /JSIL.Corlib/obj
 /CorlibTest/obj
 /CorlibTest/bin
+JSIL.Corlib/bin
+Proxies/Proxies.Corlib/obj
