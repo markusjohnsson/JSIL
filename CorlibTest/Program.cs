@@ -14,9 +14,9 @@ namespace CorlibTest
         {
             Console.WriteLine("Started running tests {0}", DateTime.Now);
 
-
             DictionaryTests.Run();
             DateTimeTests.Run();
+            LinqTest.Run();
 
             Console.WriteLine("Done!");
         }

@@ -39,6 +39,7 @@
     <Compile Include="Assert.cs" />
     <Compile Include="DateTimeTests.cs" />
     <Compile Include="DictionaryTests.cs" />
+    <Compile Include="LinqTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

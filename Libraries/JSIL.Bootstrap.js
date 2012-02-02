@@ -325,39 +325,39 @@ System.String.Empty = '';
 //  ]);
 //});
 
-JSIL.ImplementExternals(
-  "System.Threading.Thread", true, {
-    _ctor: function () {}
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.Threading.Thread", true, {
+//    _ctor: function () {}
+//  }
+//);
 
-JSIL.ImplementExternals(
-  "System.Threading.Thread", false, {
-    _cctor2: function () {
-      // This type already has a cctor, so we add a second one.
-      System.Threading.Thread._currentThread = new System.Threading.Thread();
-    },
-    get_CurrentThread: function () {
-      return System.Threading.Thread._currentThread;
-    },
-    get_ManagedThreadId: function () {
-      return 0;
-    }
-  }
-);
+//JSIL.ImplementExternals(
+//  "System.Threading.Thread", false, {
+//    _cctor2: function () {
+//      // This type already has a cctor, so we add a second one.
+//      System.Threading.Thread._currentThread = new System.Threading.Thread();
+//    },
+//    get_CurrentThread: function () {
+//      return System.Threading.Thread._currentThread;
+//    },
+//    get_ManagedThreadId: function () {
+//      return 0;
+//    }
+//  }
+//);
 
-JSIL.MakeClass("System.Object", "System.Threading.Thread", true, [], function ($) {
-  $._currentThread = null;
+//JSIL.MakeClass("System.Object", "System.Threading.Thread", true, [], function ($) {
+//  $._currentThread = null;
 
-  JSIL.MakeProperty(
-    $, "CurrentThread", 
-    $.get_CurrentThread, null
-  );
-  JSIL.MakeProperty(
-    $, "ManagedThreadId", 
-    $.get_ManagedThreadId, null
-  );
-});
+//  JSIL.MakeProperty(
+//    $, "CurrentThread", 
+//    $.get_CurrentThread, null
+//  );
+//  JSIL.MakeProperty(
+//    $, "ManagedThreadId", 
+//    $.get_ManagedThreadId, null
+//  );
+//});
 
 //$jsilcore.$ListExternals = {
 //  _ctor: function (sizeOrInitializer) {

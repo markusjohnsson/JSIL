@@ -3,8 +3,13 @@ using System.Globalization;
 using System;
 namespace System.Threading
 {
-    internal class Thread
+    public class Thread
     {
+        static Thread()
+        {
+            CurrentThread = new Thread();
+        }
+
         public static Thread CurrentThread { get; set; }
 
         private CultureInfo current_culture;
@@ -20,6 +25,11 @@ namespace System.Threading
                 NumberFormatter.SetThreadCurrentCulture(culture);
                 return culture;
             }
+        }
+
+        public int ManagedThreadId
+        {
+            get { return 0; } 
         }
 
         public CultureInfo CurrentUICulture
