@@ -198,6 +198,9 @@
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Reflection\AmbiguousMatchException.cs">
       <Link>System.Reflection\AmbiguousMatchException.cs</Link>
     </Compile>
+    <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.CompilerServices\CompilerGeneratedAttribute.cs">
+      <Link>System.Runtime.CompilerServices\CompilerGeneratedAttribute.cs</Link>
+    </Compile>
     <Compile Include="..\Upstream\mono\mcs\class\corlib\System.Runtime.CompilerServices\IndexerNameAttribute.cs">
       <Link>System.Runtime.CompilerServices\IndexerNameAttribute.cs</Link>
     </Compile>
