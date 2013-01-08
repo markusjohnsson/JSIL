@@ -313,6 +313,7 @@
     <None Include="SimpleTestCases\AsWithGenericParameter.cs" />
     <None Include="SimpleTestCases\ListRemoveRange.cs" />
     <None Include="SimpleTestCases\ListBinarySearch.cs" />
+    <Compile Include="ReflectionTestCases\AttributeTypeof.cs" />
     <Compile Include="XMLTests.cs" />
     <Compile Include="DependencyTests.cs" />
     <None Include="TestCases\GenericParameterNameShadowing.cs" />

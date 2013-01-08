@@ -157,18 +157,39 @@ JSIL.ImplementExternals(
       function (lhs, rhs) {
         if (lhs === rhs)
           return true;
+          
+        if (String(lhs) == String(rhs))
+          return true;
 
-        return String(lhs) == String(rhs);
+        var rlhs = lhs && JSIL.ResolveTypeReference(lhs);
+        var rrhs = rhs && JSIL.ResolveTypeReference(rhs);
+
+        if (rlhs === rrhs)
+          return true;
+
+        if (rlhs === null || rrhs === null)
+          return false;
+
+        return rlhs[1] == rrhs[1];
       }
     );
 
     $.Method({Public: true , Static: true }, "op_Inequality",
       new JSIL.MethodSignature("System.Boolean", [$.Type, $.Type]),
       function (lhs, rhs) {
-        if (lhs !== rhs)
-          return true;
+        if (lhs === rhs)
+          return false;
 
-        return String(lhs) != String(rhs);
+        var rlhs = lhs && JSIL.ResolveTypeReference(lhs);
+        var rrhs = rhs && JSIL.ResolveTypeReference(rhs);
+
+        if (rlhs === rrhs)
+         return false;
+
+        if (rlhs === null || rrhs === null)
+          return true;
+ 
+        return rlhs[1] != rrhs[1];
       }
     );
 
