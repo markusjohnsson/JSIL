@@ -310,7 +310,7 @@ namespace JSIL.Ast {
             OriginalMethod = originalMethod;
             Type = type;
             Expression = expression;
-            Variables = variables;
+            Variables = variables ?? new Dictionary<string, JSExpression>();
         }
 
         protected static JSExpression[] GetValues (IDictionary<string, JSExpression> variables) {
